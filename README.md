@@ -1,5 +1,5 @@
 # Kalendar 
-Name in progress.
+Name in progress 🥬
 
 Run with `npm run ios`
-Ask for the `.env` file 
+Make sure you have the `.env` file w/ keys
