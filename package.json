@@ -17,7 +17,8 @@
     "@react-navigation/bottom-tabs": "^6.5.8",
     "@react-navigation/drawer": "^6.6.15",
     "@react-navigation/native": "^6.1.7",
-    "@supabase/supabase-js": "^2.38.4",
+    "@rneui/themed": "^4.0.0-rc.8",
+    "@supabase/supabase-js": "^2.45.4",
     "expo": "^51.0.36",
     "expo-constants": "~16.0.1",
     "expo-linking": "~6.3.1",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@types/node": "^22.7.4",
     "@types/react": "~18.2.45",
     "@typescript-eslint/eslint-plugin": "^7.7.0",
     "@typescript-eslint/parser": "^7.7.0",
