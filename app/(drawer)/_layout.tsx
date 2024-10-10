@@ -10,6 +10,7 @@ const DrawerLayout = () => (
       name="index"
       options={{
         headerTitle: 'Home',
+        headerShown: false,
         drawerLabel: 'Home',
         drawerIcon: ({ size, color }) => <Ionicons name="home-outline" size={size} color={color} />,
       }}
