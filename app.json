@@ -29,7 +29,8 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kalendar.app"
     },
     "android": {
       "adaptiveIcon": {
