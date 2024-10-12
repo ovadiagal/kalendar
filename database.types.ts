@@ -3,7 +3,58 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never;
+      work_preferences: {
+        Row: {
+          id: number;
+          user_id: string;
+          start_time: Date;
+          end_time: Date;
+          selected_days: string[];
+          selected_times: string[];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          start_time: Date;
+          end_time: Date;
+          selected_days: string[];
+          selected_times: string[];
+        };
+        Update: {
+          user_id: string;
+          start_time?: Date;
+          end_time?: Date;
+          selected_days?: string[];
+          selected_times?: string[];
+        };
+      };
+      break_preferences: {
+        Row: {
+          id: number;
+          user_id: string;
+          break_time_minutes: string;
+          offline_time_1: Date;
+          offline_time_2: Date;
+          selected_activities: string[];
+          created_at: Date;
+          updated_at: Date;
+        };
+        Insert: {
+          user_id: string;
+          break_time_minutes: string;
+          offline_time_1: Date;
+          offline_time_2: Date;
+          selected_activities: string[];
+        };
+        Update: {
+          user_id: string;
+          break_time_minutes?: string;
+          offline_time_1?: Date;
+          offline_time_2?: Date;
+          selected_activities?: string[];
+        };
+      };
     };
     Views: {
       [_ in never]: never;

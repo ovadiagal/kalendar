@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
+import { Database } from '../../database.types';
+
 const Break = () => {
   const router = useRouter();
 
@@ -45,6 +47,26 @@ const Break = () => {
     setSelectedActivities((prev) =>
       prev.includes(activity) ? prev.filter(a => a !== activity) : [...prev, activity]
     );
+  };
+
+  const handleSaveAndContinue = async () => {
+    try {
+      // TODO: connect to send data to supabase
+      const newBreakPreference: Database['public']['Tables']['break_preferences']['Insert'] = {
+        user_id: 'test@gmail.com', // TODO: update when user/auth completed
+        break_time_minutes: minutes,
+        offline_time_1: firstOfflineTime,
+        offline_time_2: secondOfflineTime,
+        selected_activities: selectedActivities,
+      };
+      console.log('break preferences: ', newBreakPreference);
+
+      // if successful
+      router.push('/Integration');
+    } catch (error) {
+      console.error('Error saving break preference data:', error);
+      Alert.alert('Error', 'Failed to save break preference data. Please try again.');
+    }
   };
 
   return (
@@ -132,7 +154,7 @@ const Break = () => {
 
       <TouchableOpacity
         className="mt-5 rounded bg-accentPurple p-3"
-        onPress={() => router.push('/Integration')}>
+        onPress={() => handleSaveAndContinue()}>
         <Text className="text-center text-lg text-white">Save and Continue</Text>
       </TouchableOpacity>
 

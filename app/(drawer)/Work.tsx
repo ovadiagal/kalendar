@@ -1,9 +1,10 @@
-// /app/(drawer)/ScreenA.tsx
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+
+import { Database } from '../../database.types';
 
 const Work = () => {
   const router = useRouter();
@@ -35,16 +36,36 @@ const Work = () => {
   };
 
   const toggleTimeSelection = (time: string) => {
-    setSelectedTimes((prev) => 
+    setSelectedTimes((prev) =>
       prev.includes(time) ? prev.filter((t) => t !== time) : [...prev, time]
     );
+  };
+
+  const handleSaveAndContinue = async () => {
+    try {
+      // TODO: connect to send data to supabase
+      const newWorkPreference: Database['public']['Tables']['work_preferences']['Insert'] = {
+        user_id: 'test@gmail.com', // TODO: update when user/auth completed
+        start_time: startTime,
+        end_time: endTime,
+        selected_days: selectedDays,
+        selected_times: selectedTimes,
+      };
+      console.log('work preferences: ', newWorkPreference);
+
+      // if successful
+      router.push('/Break');
+    } catch (error) {
+      console.error('Error saving work preference data:', error);
+      Alert.alert('Error', 'Failed to save work preference data. Please try again.');
+    }
   };
 
   const days = ['M', 'T', 'W', 'Th', 'F'];
 
   const timeSlots = [
     ['6AM - 9AM', '9AM - 12PM', '12PM - 3PM'],
-    ['3PM - 6PM', '6PM - 9PM', '9PM - 12AM']
+    ['3PM - 6PM', '6PM - 9PM', '9PM - 12AM'],
   ];
 
   return (
@@ -118,7 +139,7 @@ const Work = () => {
 
       <TouchableOpacity
         className="mt-5 rounded bg-accentPurple p-3"
-        onPress={() => router.push('/Break')}>
+        onPress={() => handleSaveAndContinue()}>
         <Text className="text-center text-lg text-white">Save and Continue</Text>
       </TouchableOpacity>
 
