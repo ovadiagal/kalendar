@@ -13,7 +13,7 @@ const Divider: React.FC<DividerProps> = ({ text, className, textClassName, upper
     <View className={`flex-row items-center ${className}`}>
       <View className="h-px flex-1 bg-gray-300" />
       {text && (
-        <Text className={`mx-4 text-gray-500 ${uppercase ? 'uppercase' : ''} ${textClassName}`}>
+        <Text className={`mx-4 text-gray-500 ${uppercase && 'uppercase'} ${textClassName}`}>
           {text}
         </Text>
       )}

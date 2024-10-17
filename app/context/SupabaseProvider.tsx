@@ -39,7 +39,6 @@ export const SupabaseProvider = (props: SupabaseProviderProps) => {
   );
 
   const getGoogleOAuthUrl = async (): Promise<string | null> => {
-    console.log('in get oath url ');
     const result = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
