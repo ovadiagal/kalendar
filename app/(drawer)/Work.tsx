@@ -1,12 +1,15 @@
-// /app/(drawer)/ScreenA.tsx
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+
+import { Database } from '../../database.types';
+import { useSupabase } from '../context/useSupabase';
 
 const Work = () => {
   const router = useRouter();
+  const { supabase, userId } = useSupabase();
 
   const titleText = "Let's start with your job.";
   const worktimeQuestion = 'What is your preferred start and end time for your workday?';
@@ -35,16 +38,39 @@ const Work = () => {
   };
 
   const toggleTimeSelection = (time: string) => {
-    setSelectedTimes((prev) => 
+    setSelectedTimes((prev) =>
       prev.includes(time) ? prev.filter((t) => t !== time) : [...prev, time]
     );
+  };
+
+  const handleSaveAndContinue = async () => {
+    try {
+      const newWorkPreference: Database['public']['Tables']['work_preferences']['Insert'] = {
+        user_id: userId,
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+        selected_days: selectedDays.join(','),
+        selected_times: selectedTimes.join(','),
+        updated_at: new Date().toISOString(),
+      };
+      supabase
+        .from('work_preferences')
+        .insert(newWorkPreference)
+        .then(() => console.log('saved work preferences: ', newWorkPreference));
+
+      // if successful
+      router.push('/Break');
+    } catch (error) {
+      console.error('Error saving work preference data:', error);
+      Alert.alert('Error', 'Failed to save work preference data. Please try again.');
+    }
   };
 
   const days = ['M', 'T', 'W', 'Th', 'F'];
 
   const timeSlots = [
     ['6AM - 9AM', '9AM - 12PM', '12PM - 3PM'],
-    ['3PM - 6PM', '6PM - 9PM', '9PM - 12AM']
+    ['3PM - 6PM', '6PM - 9PM', '9PM - 12AM'],
   ];
 
   return (
@@ -118,7 +144,7 @@ const Work = () => {
 
       <TouchableOpacity
         className="mt-5 rounded bg-accentPurple p-3"
-        onPress={() => router.push('/Break')}>
+        onPress={() => handleSaveAndContinue()}>
         <Text className="text-center text-lg text-white">Save and Continue</Text>
       </TouchableOpacity>
 
