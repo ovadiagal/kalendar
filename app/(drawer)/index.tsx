@@ -28,9 +28,14 @@ export default function Home() {
       <Text className="mb-10 text-xl">{instructionText}</Text>
       <TouchableOpacity
         className="rounded bg-accentPurple p-3"
-        onPress={() => router.push('/Work')}>
+        onPress={() => router.push('/Login')}>
         <Text className="text-center text-lg text-white">Get Started</Text>
       </TouchableOpacity>
+      <View className="mt-6 items-center">
+        <TouchableOpacity onPress={() => router.push('/Login')}>
+          <Text className="text-sm text-gray-500">Already have an account? Login</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
