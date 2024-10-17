@@ -24,6 +24,7 @@ type SupabaseProviderProps = {
 export const SupabaseProvider = (props: SupabaseProviderProps) => {
   const [isLoggedIn, setLoggedIn] = useState(false);
   const [isNavigationReady, setNavigationReady] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const supabase = createClient(
     process.env.EXPO_PUBLIC_SUPABASE_URL!,
@@ -91,17 +92,28 @@ export const SupabaseProvider = (props: SupabaseProviderProps) => {
   const checkIfUserIsLoggedIn = async () => {
     const result = await supabase.auth.getSession();
     setLoggedIn(result.data.session !== null);
+    setUserId(result.data.session?.user.id || null);
     setNavigationReady(true);
   };
 
   useEffect(() => {
     checkIfUserIsLoggedIn();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setLoggedIn(session !== null);
+      setUserId(session?.user.id || null);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   return (
     <SupabaseContext.Provider
       value={{
         isLoggedIn,
+        userId,
         login,
         register,
         forgotPassword,

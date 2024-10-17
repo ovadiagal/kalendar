@@ -5,9 +5,11 @@ import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
 import { Database } from '../../database.types';
+import { useSupabase } from '../context/useSupabase';
 
 const Work = () => {
   const router = useRouter();
+  const { supabase, userId } = useSupabase();
 
   const titleText = "Let's start with your job.";
   const worktimeQuestion = 'What is your preferred start and end time for your workday?';
@@ -43,15 +45,18 @@ const Work = () => {
 
   const handleSaveAndContinue = async () => {
     try {
-      // TODO: connect to send data to supabase
       const newWorkPreference: Database['public']['Tables']['work_preferences']['Insert'] = {
-        user_id: 'test@gmail.com', // TODO: update when user/auth completed
-        start_time: startTime,
-        end_time: endTime,
-        selected_days: selectedDays,
-        selected_times: selectedTimes,
+        user_id: userId,
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+        selected_days: selectedDays.join(','),
+        selected_times: selectedTimes.join(','),
+        updated_at: new Date().toISOString(),
       };
-      console.log('work preferences: ', newWorkPreference);
+      supabase
+        .from('work_preferences')
+        .insert(newWorkPreference)
+        .then(() => console.log('saved work preferences: ', newWorkPreference));
 
       // if successful
       router.push('/Break');

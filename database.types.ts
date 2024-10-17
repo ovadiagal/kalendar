@@ -3,57 +3,71 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
-      work_preferences: {
-        Row: {
-          id: number;
-          user_id: string;
-          start_time: Date;
-          end_time: Date;
-          selected_days: string[];
-          selected_times: string[];
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          user_id: string;
-          start_time: Date;
-          end_time: Date;
-          selected_days: string[];
-          selected_times: string[];
-        };
-        Update: {
-          user_id: string;
-          start_time?: Date;
-          end_time?: Date;
-          selected_days?: string[];
-          selected_times?: string[];
-        };
-      };
       break_preferences: {
         Row: {
+          break_time_minutes: string | null;
+          created_at: string;
           id: number;
-          user_id: string;
-          break_time_minutes: string;
-          offline_time_1: Date;
-          offline_time_2: Date;
-          selected_activities: string[];
-          created_at: Date;
-          updated_at: Date;
+          offline_time_1: string | null;
+          offline_time_2: string | null;
+          selected_activities: string | null;
+          updated_at: string | null;
+          user_id: string | null;
         };
         Insert: {
-          user_id: string;
-          break_time_minutes: string;
-          offline_time_1: Date;
-          offline_time_2: Date;
-          selected_activities: string[];
+          break_time_minutes?: string | null;
+          created_at?: string;
+          id?: number;
+          offline_time_1?: string | null;
+          offline_time_2?: string | null;
+          selected_activities?: string | null;
+          updated_at?: string | null;
+          user_id?: string | null;
         };
         Update: {
-          user_id: string;
-          break_time_minutes?: string;
-          offline_time_1?: Date;
-          offline_time_2?: Date;
-          selected_activities?: string[];
+          break_time_minutes?: string | null;
+          created_at?: string;
+          id?: number;
+          offline_time_1?: string | null;
+          offline_time_2?: string | null;
+          selected_activities?: string | null;
+          updated_at?: string | null;
+          user_id?: string | null;
         };
+        Relationships: [];
+      };
+      work_preferences: {
+        Row: {
+          created_at: string;
+          end_time: string | null;
+          id: number;
+          selected_days: string | null;
+          selected_times: string | null;
+          start_time: string | null;
+          updated_at: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          end_time?: string | null;
+          id?: number;
+          selected_days?: string | null;
+          selected_times?: string | null;
+          start_time?: string | null;
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          end_time?: string | null;
+          id?: number;
+          selected_days?: string | null;
+          selected_times?: string | null;
+          start_time?: string | null;
+          updated_at?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [];
       };
     };
     Views: {
@@ -143,4 +157,19 @@ export type Enums<
   ? Database[PublicEnumNameOrOptions['schema']]['Enums'][EnumName]
   : PublicEnumNameOrOptions extends keyof PublicSchema['Enums']
     ? PublicSchema['Enums'][PublicEnumNameOrOptions]
+    : never;
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof PublicSchema['CompositeTypes']
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database;
+  }
+    ? keyof Database[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema['CompositeTypes']
+    ? PublicSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
     : never;

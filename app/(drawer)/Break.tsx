@@ -5,9 +5,11 @@ import { View, Text, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 
 import { Database } from '../../database.types';
+import { useSupabase } from '../context/useSupabase';
 
 const Break = () => {
   const router = useRouter();
+  const { supabase, userId } = useSupabase();
 
   const titleText = 'You deserve a break today.';
   const breakQuestion = 'How much break time do you prefer between focused work sessions?';
@@ -45,21 +47,25 @@ const Break = () => {
 
   const toggleActivitySelection = (activity: string) => {
     setSelectedActivities((prev) =>
-      prev.includes(activity) ? prev.filter(a => a !== activity) : [...prev, activity]
+      prev.includes(activity) ? prev.filter((a) => a !== activity) : [...prev, activity]
     );
   };
 
   const handleSaveAndContinue = async () => {
     try {
-      // TODO: connect to send data to supabase
       const newBreakPreference: Database['public']['Tables']['break_preferences']['Insert'] = {
-        user_id: 'test@gmail.com', // TODO: update when user/auth completed
+        user_id: userId,
         break_time_minutes: minutes,
-        offline_time_1: firstOfflineTime,
-        offline_time_2: secondOfflineTime,
-        selected_activities: selectedActivities,
+        offline_time_1: firstOfflineTime.toISOString(),
+        offline_time_2: secondOfflineTime.toISOString(),
+        selected_activities: selectedActivities.join(','),
+        updated_at: new Date().toISOString(),
       };
-      console.log('break preferences: ', newBreakPreference);
+
+      supabase
+        .from('break_preferences')
+        .insert(newBreakPreference)
+        .then(() => console.log('saved break preferences: ', newBreakPreference));
 
       // if successful
       router.push('/Integration');
