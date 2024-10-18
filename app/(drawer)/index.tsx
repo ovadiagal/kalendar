@@ -21,19 +21,17 @@ export default function Home() {
           className="h-30 w-30"
           resizeMode="contain"
         />
-      </View>
-      <Text className="mb-5 text-3xl font-bold">{titleText}</Text>
-      <Text className="mb-10 text-xl">{introText}</Text>
-      <Text className="mb-5 text-2xl font-bold">{instructionHeader}</Text>
-      <Text className="mb-10 text-xl">{instructionText}</Text>
-      <TouchableOpacity
-        className="rounded bg-accentPurple p-3"
-        onPress={() => router.push('/Login')}>
-        <Text className="text-center text-lg text-white">Get Started</Text>
-      </TouchableOpacity>
-      <View className="mt-6 items-center">
+        <Text className="mb-5 text-3xl font-bold">{titleText}</Text>
+        <Text className="mb-10 text-xl">{introText}</Text>
+        <Text className="mb-5 text-2xl font-bold">{instructionHeader}</Text>
+        <Text className="mb-6 text-xl">{instructionText}</Text>
+        <TouchableOpacity
+          className="rounded bg-accentPurple p-3"
+          onPress={() => router.push('/Login')}>
+        <Text className="text-center font-bold text-lg text-white">Get Started</Text>
+        </TouchableOpacity>
         <TouchableOpacity onPress={() => router.push('/Login')}>
-          <Text className="text-sm text-gray-500">Already have an account? Login</Text>
+          <Text className="mt-8 text-sm text-gray-500">Already have an account? Login</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
