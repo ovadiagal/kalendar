@@ -13,6 +13,7 @@ interface Preferences {
 
 async function fetchEvents(userId: string): Promise<EventItem[]> {
   // Fetch events from context? Or from supabase? Not sure what the right place is.
+  // TODO(isabelleilyia): fetch data from supabase here
   return [];
 }
 
@@ -30,5 +31,3 @@ async function fetchPreferences(userId: string): Promise<Preferences> {
     selectedActivities: ['Short walks', 'Meditation'],
   };
 }
-
-
