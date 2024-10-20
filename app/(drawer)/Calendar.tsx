@@ -29,11 +29,13 @@ const randomColor = () => {
 const Calendar = () => {
   const [externalEvents, setExternalEvents] = useState<EventItem[]>([]);
   const { events } = useContext(CalendarContext);
-  useEffect(() => setExternalEvents(events), [events]);
+
+  useEffect(() => {
+    setExternalEvents(events.map((event) => ({ ...event, color: randomColor() })));
+  }, [events]);
 
   const [personalEvents, setPersonalEvents] = useState<EventItem[]>([]);
 
-  console.log('externalEvents', externalEvents);
   const { userId } = useContext(SupabaseContext);
   useEffect(() => {
     scheduler.runScheduler(userId ?? 'TEST', events).then((result) => {

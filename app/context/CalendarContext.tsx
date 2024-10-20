@@ -1,5 +1,5 @@
-import { EventItem } from '@howljs/calendar-kit';
 import React, { createContext, useState, ReactNode } from 'react';
+import { EventItem } from '@howljs/calendar-kit';
 
 interface CalendarContextType {
   events: EventItem[];
@@ -19,7 +19,7 @@ export const CalendarProvider: React.FC<CalendarProviderProps> = ({ children }) 
   const [events, setEvents] = useState<EventItem[]>([]);
 
   const addEvents = (newEvents: EventItem[]) => {
-    setEvents(newEvents);
+    setEvents((prevEvents) => [...prevEvents, ...newEvents]);
   };
 
   return (

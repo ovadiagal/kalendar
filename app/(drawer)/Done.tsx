@@ -15,7 +15,11 @@ const Done = () => {
         <Image source={check} className="mb-10 mt-40 h-24 w-24" resizeMode="contain" />
       </View>
       <View className="mt-20 h-20" />
-      <TouchableOpacity className="rounded bg-accentPurple p-3" onPress={() => {}}>
+      <TouchableOpacity
+        className="rounded bg-accentPurple p-3"
+        onPress={() => {
+          router.push('/Calendar');
+        }}>
         <Text className="text-center text-lg text-white">Show me my schedule!</Text>
       </TouchableOpacity>
     </ScrollView>
