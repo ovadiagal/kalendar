@@ -3,6 +3,7 @@ import { View, ScrollView, Text, TouchableOpacity, Image, Alert } from 'react-na
 import * as Calendar from 'expo-calendar';
 import { useRouter } from 'expo-router';
 import { CalendarContext } from '../context/CalendarContext';
+import { EventItem } from '@howljs/calendar-kit';
 
 const Integration = () => {
   const router = useRouter();
@@ -17,7 +18,7 @@ const Integration = () => {
     try {
       // Ask for calendar permission
       const { status: calendarStatus } = await Calendar.requestCalendarPermissionsAsync();
-      
+
       if (calendarStatus === 'granted') {
         // Get default calendar source
         const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
@@ -26,20 +27,26 @@ const Integration = () => {
 
         // Get current week start and end dates
         const currentDate = new Date();
-        const startOfWeek = new Date(currentDate.setDate(currentDate.getDate() - currentDate.getDay()));
+        const startOfWeek = new Date(
+          currentDate.setDate(currentDate.getDate() - currentDate.getDay())
+        );
         const endOfWeek = new Date(currentDate.setDate(currentDate.getDate() + 6));
 
         // Fetch events for the current week
         const events = await Calendar.getEventsAsync([calendarId], startOfWeek, endOfWeek);
-        const formattedEvents = events.map((event) => ({
+        const formattedEvents: EventItem[] = events.map((event) => ({
+          id: event.id,
           title: event.title,
-          startTime: event.startDate.toLocaleString(),
-          endTime: event.endDate.toLocaleString(),
+          start: { dateTime: new Date(event.startDate).toISOString() },
+          end: { dateTime: new Date(event.endDate).toISOString() },
         }));
         addEvents(formattedEvents);
         router.push('/Done');
       } else {
-        Alert.alert('Permission denied', 'Please enable calendar permissions in device settings to continue.');
+        Alert.alert(
+          'Permission denied',
+          'Please enable calendar permissions in device settings to continue.'
+        );
       }
     } catch (error) {
       console.error('Error fetching calendar events:', error);
