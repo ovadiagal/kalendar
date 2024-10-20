@@ -5,13 +5,14 @@ import type {
   SelectedEventType,
 } from '@howljs/calendar-kit';
 import { CalendarBody, CalendarContainer, CalendarHeader } from '@howljs/calendar-kit';
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, Text, View, useColorScheme } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Dimensions, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import Header from '../../components/CalendarTopBar';
 import * as scheduler from '../../scheduler/index';
-import { SupabaseContext } from '../context/SupabaseContext';
+import { useSupabase } from '../context/useSupabase';
 
 export interface ScheduledItem extends EventItem {
   scheduled: boolean;
@@ -45,7 +46,7 @@ const minDate = new Date(new Date().getFullYear(), new Date().getMonth() - 4, ne
 
 const Calendar = () => {
   const [events, setEvents] = useState<EventItem[]>([]);
-  const { userId } = useContext(SupabaseContext);
+  const { userId } = useSupabase();
   useEffect(() => {
     if (userId) {
       scheduler.runScheduler(userId).then((events) => {
