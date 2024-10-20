@@ -23,7 +23,7 @@ export async function generatePersonalEvents(
   // Initialize random number generator
   const rng = new RandomNumberGenerator(Math.floor(Math.random() * 100));
 
-  // Set the date range for scheduling (next 7 days)
+  // Set the date range for scheduling today until next week
   const today = new Date();
   const endDate = new Date();
   endDate.setDate(today.getDate() + 7);
@@ -66,7 +66,6 @@ export async function generatePersonalEvents(
     };
     const dayName = daysOfWeekMap[dayOfWeek];
 
-    // Only proceed if the day is in selectedDays
     // Get the user's availability for the day
     const dayStart = new Date(date);
     const [startHour, startMinute] = prefs.startTime.split(':').map(Number);
