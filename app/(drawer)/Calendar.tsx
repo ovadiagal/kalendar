@@ -5,14 +5,16 @@ import type {
   SelectedEventType,
 } from '@howljs/calendar-kit';
 import { CalendarBody, CalendarContainer, CalendarHeader } from '@howljs/calendar-kit';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, StyleSheet, Text, View, useColorScheme } from 'react-native';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Dimensions, Text, View, useColorScheme } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Header from '../../components/Header';
+import Header from '../../components/CalendarTopBar';
+import * as scheduler from '../../scheduler/index';
+import { SupabaseContext } from '../context/SupabaseContext';
 
-interface ScheduledItem extends EventItem {
-  scheduled: true;
+export interface ScheduledItem extends EventItem {
+  scheduled: boolean;
 }
 
 const MIN_DATE = new Date(
@@ -68,13 +70,34 @@ const generateEvents = () => {
 };
 
 const Calendar = () => {
-  const [events, setEvents] = useState<EventItem[]>(() => generateEvents());
-  const { bottom: safeBottom } = useSafeAreaInsets();
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const { userId } = useContext(SupabaseContext);
+  useEffect(() => {
+    if (userId) {
+      scheduler.runScheduler(userId).then((events) => {
+        const coloredEvents = events.map((event) => ({
+          ...event,
+          color: randomColor(),
+        }));
+        setEvents(coloredEvents);
+      });
+    } else {
+      scheduler.runScheduler('TEST').then((events) => {
+        const coloredEvents = events.map((event) => ({
+          ...event,
+          color: randomColor(),
+        }));
+        setEvents(coloredEvents);
+      });
+    }
+  }, [userId]);
+
   const calendarRef = useRef<CalendarKitHandle>(null);
   const currentDate = useSharedValue(INITIAL_DATE);
   const [selectedEvent, setSelectedEvent] = useState<SelectedEventType>();
   const [calendarWidth, setCalendarWidth] = useState(Dimensions.get('window').width);
 
+  const { bottom: safeBottom } = useSafeAreaInsets();
   useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window }) => {
       setCalendarWidth(window.width);
@@ -85,8 +108,6 @@ const Calendar = () => {
   const _onChange = (date: string) => {
     currentDate.value = date;
   };
-
-  const _onPressDayNumber = (date: string) => {};
 
   const _onPressToday = useCallback(() => {
     calendarRef.current?.goToDate({
@@ -115,7 +136,7 @@ const Calendar = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1">
       <Header currentDate={currentDate} onPressToday={_onPressToday} />
       <CalendarContainer
         ref={calendarRef}
@@ -123,7 +144,7 @@ const Calendar = () => {
         numberOfDays={7}
         scrollByDay={false}
         firstDay={1}
-        hideWeekDays={[]} // Can specify here to hide specific days, i.e. weekend
+        hideWeekDays={[]} // Can specify here to hide specific days to hide, i.e. hide weekend w/ [6, 7]
         minRegularEventMinutes={5}
         allowPinchToZoom={true}
         onChange={_onChange}
@@ -131,7 +152,7 @@ const Calendar = () => {
         minDate={MIN_DATE}
         maxDate={MAX_DATE}
         initialDate={INITIAL_DATE}
-        onPressDayNumber={undefined} // In the future we can make this change 'numberOfDays' to 1 and show a daily view
+        onPressDayNumber={undefined}
         onPressBackground={_onPressBackground}
         unavailableHours={unavailableHours}
         events={events}
@@ -139,9 +160,9 @@ const Calendar = () => {
           console.log(event);
         }}
         useHaptic={true}
-        allowDragToEdit // We can disable these if we want more fine tuned interaction with how users reschedule events (i.e. tap -> popup -> edit)
+        allowDragToEdit
         allowDragToCreate
-        useAllDayEvent={false} // Allows us to schedule 'full day' events. I'm not sure if in this context of our day-to-day granular scheduling it's necessary.
+        useAllDayEvent={false}
         rightEdgeSpacing={1}
         overlapEventsSpacing={2}
         onLongPressEvent={(event) => {
@@ -150,8 +171,6 @@ const Calendar = () => {
           }
         }}
         selectedEvent={selectedEvent}
-        // end <-- set start/end times to calendar with this prop.
-        // start
         spaceFromBottom={safeBottom}
         onDragEventEnd={async (event) => {
           const { originalRecurringEvent, ...rest } = event;
@@ -205,10 +224,7 @@ const Calendar = () => {
           setEvents(newEvents);
           setSelectedEvent(newEvent);
         }}>
-        <CalendarHeader
-          dayBarHeight={60}
-          renderHeaderItem={undefined} // Can place a custom header renderer here if we want.
-        />
+        <CalendarHeader dayBarHeight={60} renderHeaderItem={undefined} />
         <CalendarBody />
       </CalendarContainer>
     </View>
@@ -216,30 +232,3 @@ const Calendar = () => {
 };
 
 export default Calendar;
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  actions: { flexDirection: 'row', gap: 10, padding: 10 },
-  btn: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    backgroundColor: '#23cfde',
-  },
-  header: {
-    backgroundColor: 'white',
-    padding: 16,
-  },
-  date: { fontSize: 16, fontWeight: 'bold' },
-  resourceContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    flex: 1,
-    gap: 8,
-  },
-  dateContainer: {
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-    paddingVertical: 8,
-  },
-});

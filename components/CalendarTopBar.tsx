@@ -4,10 +4,10 @@ import { DrawerActions, useTheme } from '@react-navigation/native';
 import { useNavigation } from 'expo-router';
 import type { FC } from 'react';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 import { runOnJS, useAnimatedReaction } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 interface HeaderProps {
   currentDate: SharedValue<string>;
@@ -16,9 +16,7 @@ interface HeaderProps {
 
 const Header: FC<HeaderProps> = ({ currentDate, onPressToday }) => {
   const theme = useTheme();
-  const { top: safeTop } = useSafeAreaInsets();
   const [title, setTitle] = useState('');
-  const navigation = useNavigation<DrawerNavigationProp<any>>();
 
   const updateTitle = (date: string) => {
     const formatted = new Date(date).toLocaleDateString('en-US', {
@@ -36,14 +34,21 @@ const Header: FC<HeaderProps> = ({ currentDate, onPressToday }) => {
     []
   );
 
-  const _onPressMenu = () => {
-    navigation.dispatch(DrawerActions.openDrawer());
-  };
-
   return (
-    <View style={[styles.header, { paddingTop: 16, backgroundColor: theme.colors.card }]}>
-      <View style={styles.headerRightContent}>
-        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>{title}</Text>
+    <View
+      className="flex-row items-center px-3 pb-4 pt-4"
+      style={{ backgroundColor: theme.colors.card }}>
+      <View className="flex-grow flex-row items-center">
+        <Text className="flex-grow text-lg font-medium" style={{ color: theme.colors.text }}>
+          {title}
+        </Text>
+        <TouchableOpacity
+          hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+          activeOpacity={0.6}
+          onPress={onPressToday}
+          className="mr-4">
+          <Ionicons name="sparkles-sharp" size={24} color="blueviolet" />
+        </TouchableOpacity>
         <TouchableOpacity
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
           activeOpacity={0.6}
@@ -56,25 +61,3 @@ const Header: FC<HeaderProps> = ({ currentDate, onPressToday }) => {
 };
 
 export default Header;
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingBottom: 16,
-    paddingHorizontal: 12,
-  },
-  menuBtn: { width: 40, alignItems: 'center' },
-  headerRightContent: {
-    flexDirection: 'row',
-    flexGrow: 1,
-    alignItems: 'center',
-    flexShrink: 1,
-  },
-  headerTitle: { flexGrow: 1, flexShrink: 1, fontSize: 16, fontWeight: '500' },
-  navigation: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginHorizontal: 8,
-  },
-});
