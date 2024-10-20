@@ -43,32 +43,6 @@ const randomColor = () => {
 
 const minDate = new Date(new Date().getFullYear(), new Date().getMonth() - 4, new Date().getDate());
 
-const generateEvents = () => {
-  return new Array(500).fill(0).map((_, index) => {
-    const randomDateByIndex = new Date(
-      minDate.getFullYear(),
-      minDate.getMonth(),
-      minDate.getDate() + Math.floor(index / 2),
-      Math.floor(Math.random() * 24),
-      Math.round((Math.random() * 60) / 15) * 15
-    );
-    const duration = (Math.floor(Math.random() * 15) + 1) * 15 * 60 * 1000;
-    const endDate = new Date(randomDateByIndex.getTime() + duration);
-
-    return {
-      id: `event_${index + 1}`,
-      start: {
-        dateTime: randomDateByIndex.toISOString(),
-      },
-      end: {
-        dateTime: endDate.toISOString(),
-      },
-      title: `Event ${index + 1}`,
-      color: randomColor(),
-    } as EventItem;
-  });
-};
-
 const Calendar = () => {
   const [events, setEvents] = useState<EventItem[]>([]);
   const { userId } = useContext(SupabaseContext);
