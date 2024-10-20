@@ -1,6 +1,7 @@
 import { Preferences } from '../models/Preferences';
 
 export async function fetchPreferences(userId: string): Promise<Preferences> {
+  // TODO(isabelleilyia): Supabase fetching here
   // Fetch work preferences from the database or API
   return {
     userId,
