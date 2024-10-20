@@ -1,21 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
-import * as SecureStore from 'expo-secure-store';
 import React, { useState, useEffect } from 'react';
 
 import { SupabaseContext } from './SupabaseContext';
 
-// We are using Expo Secure Store to persist session info
-const ExpoSecureStoreAdapter = {
-  getItem: (key: string) => {
-    return SecureStore.getItemAsync(key);
-  },
-  setItem: (key: string, value: string) => {
-    SecureStore.setItemAsync(key, value);
-  },
-  removeItem: (key: string) => {
-    SecureStore.deleteItemAsync(key);
-  },
-};
+import { supabase } from '~/utils/supabase';
 
 type SupabaseProviderProps = {
   children: JSX.Element | JSX.Element[];
@@ -25,19 +12,6 @@ export const SupabaseProvider = (props: SupabaseProviderProps) => {
   const [isLoggedIn, setLoggedIn] = useState(false);
   const [isNavigationReady, setNavigationReady] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-
-  const supabase = createClient(
-    process.env.EXPO_PUBLIC_SUPABASE_URL!,
-    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      auth: {
-        storage: ExpoSecureStoreAdapter,
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: false,
-      },
-    }
-  );
 
   const getGoogleOAuthUrl = async (): Promise<string | null> => {
     const result = await supabase.auth.signInWithOAuth({
