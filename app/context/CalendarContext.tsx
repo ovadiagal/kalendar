@@ -19,7 +19,7 @@ export const CalendarProvider: React.FC<CalendarProviderProps> = ({ children }) 
   const [events, setEvents] = useState<EventItem[]>([]);
 
   const addEvents = (newEvents: EventItem[]) => {
-    setEvents((prevEvents) => [...prevEvents, ...newEvents]);
+    setEvents(newEvents);
   };
 
   return (

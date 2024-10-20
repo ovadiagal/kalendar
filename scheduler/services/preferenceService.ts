@@ -3,6 +3,19 @@ import { Preferences } from '../models/Preferences';
 import { supabase } from '~/utils/supabase';
 
 export async function fetchPreferences(userId: string): Promise<Preferences> {
+  if (userId === 'TEST') {
+    console.log('Using test preferences');
+    return {
+      userId: 'TEST',
+      startTime: '09:00',
+      endTime: '17:00',
+      selectedDays: ['M', 'T', 'W', 'Th', 'F'],
+      selectedTimes: ['6AM - 9AM'],
+      breakTimeMinutes: 15,
+      offlineTimes: ['12:00', '13:00'],
+      selectedActivities: ['Short walks', 'Meditation'],
+    };
+  }
   const { data: workPreferencesData, error: workPreferencesError } = await supabase
     .from('work_preferences')
     .select('*')
