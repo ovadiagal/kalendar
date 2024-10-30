@@ -10,7 +10,7 @@ import { Dimensions, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import Header from '../../components/CalendarTopBar';
+import CalendarTopBar from '../../components/CalendarTopBar';
 import * as scheduler from '../../scheduler/index';
 import { CalendarContext } from '../context/CalendarContext';
 import { useSupabase } from '../context/useSupabase';
@@ -32,17 +32,21 @@ const Calendar = () => {
   const { events } = useContext(CalendarContext);
 
   useEffect(() => {
-    setExternalEvents(events.map((event) => ({ ...event, color: randomColor() })));
+    setExternalEvents(events.map((event) => ({ ...event, color: 'tomato' })));
   }, [events]);
 
   const [personalEvents, setPersonalEvents] = useState<EventItem[]>([]);
 
   const { userId } = useSupabase();
-  useEffect(() => {
+
+  const runScheduler = async () => {
     scheduler.runScheduler(userId ?? 'TEST', events).then((result) => {
-      setPersonalEvents(result.map((event) => ({ ...event, color: randomColor() })));
+      setPersonalEvents(result.map((event) => ({ ...event, color: 'powderblue' })));
     });
-  }, [userId]);
+  };
+  useEffect(() => {
+    runScheduler();
+  }, []);
 
   const calendarRef = useRef<CalendarKitHandle>(null);
   const currentDate = useSharedValue(INITIAL_DATE);
@@ -70,7 +74,7 @@ const Calendar = () => {
 
   const unavailableHours = useMemo(
     () => [
-      { start: 0, end: 6 * 60, enableBackgroundInteraction: true },
+      { start: 0, end: 9 * 60, enableBackgroundInteraction: true },
       { start: 20 * 60, end: 24 * 60, enableBackgroundInteraction: true },
     ],
     []
@@ -88,12 +92,16 @@ const Calendar = () => {
 
   return (
     <View className="flex-1">
-      <Header currentDate={currentDate} onPressToday={_onPressToday} />
+      <CalendarTopBar
+        currentDate={currentDate}
+        onPressToday={_onPressToday}
+        runScheduler={runScheduler}
+      />
       <CalendarContainer
         ref={calendarRef}
         calendarWidth={calendarWidth}
-        numberOfDays={7}
-        scrollByDay={false}
+        numberOfDays={5}
+        scrollByDay={true}
         firstDay={1}
         hideWeekDays={[]} // Can specify here to hide specific days to hide, i.e. hide weekend w/ [6, 7]
         minRegularEventMinutes={5}

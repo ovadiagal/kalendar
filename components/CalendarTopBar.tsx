@@ -9,12 +9,13 @@ import type { SharedValue } from 'react-native-reanimated';
 import { runOnJS, useAnimatedReaction } from 'react-native-reanimated';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-interface HeaderProps {
+interface CalendarTopBarProps {
   currentDate: SharedValue<string>;
-  onPressToday?: () => void;
+  onPressToday: () => void;
+  runScheduler: () => void;
 }
 
-const Header: FC<HeaderProps> = ({ currentDate, onPressToday }) => {
+const CalendarTopBar: FC<CalendarTopBarProps> = ({ currentDate, onPressToday, runScheduler }) => {
   const theme = useTheme();
   const [title, setTitle] = useState('');
 
@@ -45,7 +46,7 @@ const Header: FC<HeaderProps> = ({ currentDate, onPressToday }) => {
         <TouchableOpacity
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
           activeOpacity={0.6}
-          onPress={onPressToday}
+          onPress={runScheduler}
           className="mr-4">
           <Ionicons name="sparkles-sharp" size={24} color="blueviolet" />
         </TouchableOpacity>
@@ -60,4 +61,4 @@ const Header: FC<HeaderProps> = ({ currentDate, onPressToday }) => {
   );
 };
 
-export default Header;
+export default CalendarTopBar;
