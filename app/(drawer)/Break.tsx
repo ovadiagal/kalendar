@@ -109,7 +109,7 @@ const Break = () => {
 
       <View className="mb-5 mt-5 rounded-lg bg-white pb-5 pl-3 pr-5 pt-5 shadow-lg">
         <Text className="ml-3 text-lg font-semibold">{activityQuestion}</Text>
-        <View className="mt-3">
+        <View className="ml-3 mt-3">
           <View className="mb-2 flex-row justify-start">
             {['Short walks', 'Meditation'].map((activity) => (
               <TouchableOpacity
