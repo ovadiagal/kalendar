@@ -42,6 +42,36 @@ export type Database = {
         }
         Relationships: []
       }
+      break_preferences_updated: {
+        Row: {
+          break_time: string | null
+          created_at: string
+          id: number
+          number_of_breaks: string | null
+          selected_activities: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          break_time?: string | null
+          created_at?: string
+          id?: number
+          number_of_breaks?: string | null
+          selected_activities?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          break_time?: string | null
+          created_at?: string
+          id?: number
+          number_of_breaks?: string | null
+          selected_activities?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       work_preferences: {
         Row: {
           created_at: string

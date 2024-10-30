@@ -88,6 +88,13 @@ const Work = () => {
   };
 
   const days = ['M', 'T', 'W', 'Th', 'F'];
+  const dayNames: Record<string, string> = {
+    M: 'Monday',
+    T: 'Tuesday',
+    W: 'Wednesday',
+    Th: 'Thursday',
+    F: 'Friday',
+  };
   const timeSlots = [
     '6AM - 7AM',
     '7AM - 8AM',
@@ -117,7 +124,7 @@ const Work = () => {
     <View className="flex-1">
       <ScrollView className="flex-1 p-6">
         <Text className="mb-5 text-3xl font-bold">{titleText}</Text>
-
+        <Text className="mb-3 text-lg font-bold text-accentPurple">{dayNames[selectedDay]}</Text>
         <View className="mb-5 flex-row justify-between">
           {days.map((day) => (
             <TouchableOpacity
