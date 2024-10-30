@@ -14,6 +14,7 @@ export async function fetchPreferences(userId: string): Promise<Preferences> {
       breakTimeMinutes: 15,
       offlineTimes: ['12:00', '13:00'],
       selectedActivities: ['Short walk', 'Meditation', 'Work out'],
+      preferenceModifications: '',
     };
   }
   const { data: workPreferencesData, error: workPreferencesError } = await supabase
@@ -46,5 +47,6 @@ export async function fetchPreferences(userId: string): Promise<Preferences> {
       'Short walks',
       'Meditation',
     ],
+    preferenceModifications: '',
   };
 }

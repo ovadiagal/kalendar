@@ -39,9 +39,13 @@ const Calendar = () => {
 
   const { userId } = useSupabase();
 
-  const runScheduler = async () => {
+  const [loading, setLoading] = useState(false);
+  const runScheduler = () => {
+    if (loading) return;
+    setLoading(true);
     scheduler.runScheduler(userId ?? 'TEST', events).then((result) => {
       setPersonalEvents(result.map((event) => ({ ...event, color: 'powderblue' })));
+      setLoading(false);
     });
   };
   useEffect(() => {

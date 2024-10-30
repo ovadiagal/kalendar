@@ -1,12 +1,18 @@
 import { EventItem } from '@howljs/calendar-kit';
 import OpenAI from 'openai';
+import { fetchPreferences } from './services/preferenceService';
+
 
 export async function runScheduler(
   userId: string,
   externalEvents: EventItem[]
 ): Promise<EventItem[]> {
+  console.log('gonna fetch preferences');
+  const preferences = await fetchPreferences(userId);
+
+  console.log('pref', preferences);
   const openai = new OpenAI({
-    apiKey: process.env.OPENAI_KEY,
+    apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY!,
   });
 
   // Create a thread with the external events as context
@@ -21,13 +27,14 @@ export async function runScheduler(
 
   // Run the assistant
   const run = await openai.beta.threads.runs.create(thread.id, {
-    assistant_id: process.env.OPENAI_ASSISTANT_ID!,
+    assistant_id: process.env.EXPO_PUBLIC_OPENAI_ASSISTANT_ID!,
   });
 
   // Wait for the completion
   let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
 
   while (runStatus.status !== 'completed') {
+    console.log(runStatus.status);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
   }
