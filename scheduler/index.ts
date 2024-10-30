@@ -1,7 +1,7 @@
 import { EventItem } from '@howljs/calendar-kit';
 import OpenAI from 'openai';
 import { fetchPreferences } from './services/preferenceService';
-
+import { fetchStoredSchedule, storeGeneratedSchedule } from './services/storedScheduleService';
 
 export async function runScheduler(
   userId: string,
@@ -10,6 +10,11 @@ export async function runScheduler(
   console.log('gonna fetch preferences');
   const preferences = await fetchPreferences(userId);
 
+  const existingSchedule = await fetchStoredSchedule(userId);
+
+  if (existingSchedule) {
+    return existingSchedule as EventItem[];
+  }
   console.log('pref', preferences);
   const openai = new OpenAI({
     apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY!,
@@ -50,6 +55,7 @@ export async function runScheduler(
   if (response.type === 'text') {
     const generatedEvents = JSON.parse(response.text.value) as EventItem[];
     console.log('Generated events:', generatedEvents);
+    await storeGeneratedSchedule(userId, generatedEvents);
     return generatedEvents;
   } else {
     throw new Error('Unexpected response type');

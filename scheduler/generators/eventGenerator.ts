@@ -1,9 +1,10 @@
+import { EventItem } from '@howljs/calendar-kit';
+import { DateTime, Interval } from 'luxon';
+
+import { Preferences } from '../models/Preferences';
 import { fetchEvents } from '../services/eventService';
 import { fetchPreferences } from '../services/preferenceService';
-import { DateTime, Interval } from 'luxon';
 import { isIntervalFree, RandomNumberGenerator, splitTimeSlots } from '../utils/schedulingUtils';
-import { EventItem } from '@howljs/calendar-kit';
-import { Preferences } from '../models/Preferences';
 
 export async function generatePersonalEvents(
   userId: string,
@@ -30,7 +31,7 @@ export async function generatePersonalEvents(
 
   // Get all dates in the date range
   const dates: Date[] = [];
-  let currentDate = new Date(today);
+  const currentDate = new Date(today);
   while (currentDate <= endDate) {
     dates.push(new Date(currentDate));
     currentDate.setDate(currentDate.getDate() + 1);
