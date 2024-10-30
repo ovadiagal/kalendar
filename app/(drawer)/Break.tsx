@@ -59,96 +59,99 @@ const Break = () => {
   };
 
   return (
-    <ScrollView className="pb-30 flex-1 px-10 py-10">
-      <Text className="mb-5 text-3xl font-bold">{titleText}</Text>
+    <View className="flex-1">
+      <ScrollView className="flex-1 p-6">
+        <Text className="mb-5 text-3xl font-bold">{titleText}</Text>
 
-      <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
-        <Text className="text-lg font-semibold">{breakQuestion}</Text>
-        <View className="mt-5">
-          <View className="flex-row justify-between">
-            {breakOptions.slice(0, 2).map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                onPress={() => toggleBreakTimeSelection(option.value)}
-                className={`h-14 w-40 items-center justify-center rounded-lg 
-                  ${selectedBreakTime === option.value ? 'bg-accentPurple' : 'bg-gray-100'}`}>
-                <Text
-                  className={`text-md font-bold ${selectedBreakTime === option.value ? 'text-white' : 'text-accentPurple'}`}>
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <View className="mt-3 flex-row justify-between">
-            {breakOptions.slice(2).map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                onPress={() => toggleBreakTimeSelection(option.value)}
-                className={`h-14 w-40 items-center justify-center rounded-lg 
-                  ${selectedBreakTime === option.value ? 'bg-accentPurple' : 'bg-gray-100'}`}>
-                <Text
-                  className={`text-md font-bold ${selectedBreakTime === option.value ? 'text-white' : 'text-accentPurple'}`}>
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      </View>
-
-      <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
-        <Text className="mb-3 text-lg font-semibold">{numberOfBreaksQuestion}</Text>
-        <TextInput
-          keyboardType="numeric"
-          placeholder="Number of breaks"
-          value={numberOfBreaks !== null ? numberOfBreaks.toString() : ''}
-          onChangeText={(text) => setNumberOfBreaks(text)}
-          className="mt-2 rounded-lg border border-gray-400 p-2" // Using NativeWind classes
-        />
-      </View>
-
-      <View className="mb-5 mt-5 rounded-lg bg-white pb-5 pl-3 pr-5 pt-5 shadow-lg">
-        <Text className="ml-3 text-lg font-semibold">{activityQuestion}</Text>
-        <View className="ml-3 mt-3">
-          <View className="mb-2 flex-row justify-start">
-            {['Short walks', 'Meditation'].map((activity) => (
-              <TouchableOpacity
-                key={activity}
-                onPress={() => toggleActivitySelection(activity)}
-                className={`mr-2 h-14 w-40 items-center justify-center rounded-lg
-                  ${selectedActivities.includes(activity) ? 'bg-accentPurple' : 'bg-gray-100'}`}>
-                <Text
-                  className={`text-md font-bold ${selectedActivities.includes(activity) ? 'text-white' : 'text-accentPurple'}`}>
-                  {activity}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <View className="flex-row justify-start">
-            {['Social breaks', 'Eating snacks'].map((activity) => (
-              <TouchableOpacity
-                key={activity}
-                onPress={() => toggleActivitySelection(activity)}
-                className={`mr-2 h-14 w-40 items-center justify-center rounded-lg
-                  ${selectedActivities.includes(activity) ? 'bg-accentPurple' : 'bg-gray-100'}`}>
-                <Text
-                  className={`text-md font-bold ${selectedActivities.includes(activity) ? 'text-white' : 'text-accentPurple'}`}>
-                  {activity}
-                </Text>
-              </TouchableOpacity>
-            ))}
+        <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
+          <Text className="text-lg font-semibold">{breakQuestion}</Text>
+          <View className="mt-5">
+            <View className="flex-row justify-between pl-3 pr-3">
+              {breakOptions.slice(0, 2).map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => toggleBreakTimeSelection(option.label)}
+                  className={`h-14 w-40 items-center justify-center rounded-lg 
+                    ${selectedBreakTime === option.label ? 'bg-accentPurple' : 'bg-gray-100'}`}>
+                  <Text
+                    className={`text-md font-bold ${selectedBreakTime === option.label ? 'text-white' : 'text-accentPurple'}`}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View className="mt-3 flex-row justify-between pl-3 pr-3">
+              {breakOptions.slice(2).map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => toggleBreakTimeSelection(option.label)}
+                  className={`h-14 w-40 items-center justify-center rounded-lg 
+                    ${selectedBreakTime === option.label ? 'bg-accentPurple' : 'bg-gray-100'}`}>
+                  <Text
+                    className={`text-md font-bold ${selectedBreakTime === option.label ? 'text-white' : 'text-accentPurple'}`}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
+
+        <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
+          <Text className="mb-3 text-lg font-semibold">{numberOfBreaksQuestion}</Text>
+          <TextInput
+            keyboardType="numeric"
+            placeholder="Number of breaks"
+            value={numberOfBreaks !== null ? numberOfBreaks.toString() : ''}
+            onChangeText={(text) => setNumberOfBreaks(text)}
+            className="mt-2 rounded-lg border border-gray-400 p-2"
+          />
+        </View>
+
+        <View className="mb-5 mt-5 rounded-lg bg-white pb-5 pl-3 pr-5 pt-5 shadow-lg">
+          <Text className="ml-3 text-lg font-semibold">{activityQuestion}</Text>
+          <View className="ml-3 mt-3">
+            <View className="mb-2 ml-3 flex-row justify-start">
+              {['Short walks', 'Meditation'].map((activity) => (
+                <TouchableOpacity
+                  key={activity}
+                  onPress={() => toggleActivitySelection(activity)}
+                  className={`mr-2 h-14 w-40 items-center justify-center rounded-lg
+                    ${selectedActivities.includes(activity) ? 'bg-accentPurple' : 'bg-gray-100'}`}>
+                  <Text
+                    className={`text-md font-bold ${selectedActivities.includes(activity) ? 'text-white' : 'text-accentPurple'}`}>
+                    {activity}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View className="ml-3 flex-row justify-start">
+              {['Social breaks', 'Eating snacks'].map((activity) => (
+                <TouchableOpacity
+                  key={activity}
+                  onPress={() => toggleActivitySelection(activity)}
+                  className={`mr-2 h-14 w-40 items-center justify-center rounded-lg
+                    ${selectedActivities.includes(activity) ? 'bg-accentPurple' : 'bg-gray-100'}`}>
+                  <Text
+                    className={`text-md font-bold ${selectedActivities.includes(activity) ? 'text-white' : 'text-accentPurple'}`}>
+                    {activity}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+        <View style={{ height: 50 }} />
+      </ScrollView>
+
+      <View className="p-6 pb-10 shadow-lg">
+        <TouchableOpacity
+          className="mt-5 rounded bg-accentPurple p-3"
+          onPress={handleSaveAndContinue}>
+          <Text className="text-center text-lg text-white">Save and Continue</Text>
+        </TouchableOpacity>
       </View>
-
-      <TouchableOpacity
-        className="mt-5 rounded bg-accentPurple p-3"
-        onPress={handleSaveAndContinue}>
-        <Text className="text-center text-lg text-white">Save and Continue</Text>
-      </TouchableOpacity>
-
-      <View style={{ height: 100 }} />
-    </ScrollView>
+    </View>
   );
 };
 
