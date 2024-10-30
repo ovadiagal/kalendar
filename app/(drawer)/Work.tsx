@@ -1,4 +1,4 @@
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
@@ -12,53 +12,74 @@ const Work = () => {
   const { supabase, userId } = useSupabase();
 
   const titleText = "Let's start with your job.";
-  const worktimeQuestion = 'What is your preferred start and end time for your workday?';
-  const workdayQuestion = 'What days do you work remotely?';
-  const productiveTimes = 'Do you have specific times that you are most productive?';
+  const worktimeQuestion = 'What is your preferred start time and end time for this workday?';
+  const productiveTimesQuestion = 'When do you think you are most productive on this workday?';
 
-  const [startTime, setStartTime] = useState<Date>(new Date());
-  const [endTime, setEndTime] = useState<Date>(new Date());
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
+  const [selectedDay, setSelectedDay] = useState<string>('M');
+  const [times, setTimes] = useState<{ [key: string]: { start: Date; end: Date } }>({
+    M: { start: new Date(), end: new Date() },
+    T: { start: new Date(), end: new Date() },
+    W: { start: new Date(), end: new Date() },
+    Th: { start: new Date(), end: new Date() },
+    F: { start: new Date(), end: new Date() },
+  });
 
-  const onStartTimeChange = (event: DateTimePickerEvent, selectedTime?: Date) => {
-    const currentTime = selectedTime || startTime;
-    setStartTime(currentTime);
+  const [productiveTimes, setProductiveTimes] = useState<{ [key: string]: string[] }>({
+    M: [],
+    T: [],
+    W: [],
+    Th: [],
+    F: [],
+  });
+
+  const handleTimeChange = (
+    day: string,
+    type: 'start' | 'end',
+    event: any,
+    selectedTime?: Date
+  ) => {
+    if (selectedTime) {
+      setTimes((prev) => ({
+        ...prev,
+        [day]: {
+          ...prev[day],
+          [type]: selectedTime,
+        },
+      }));
+    }
   };
 
-  const onEndTimeChange = (event: DateTimePickerEvent, selectedTime?: Date) => {
-    const currentTime = selectedTime || endTime;
-    setEndTime(currentTime);
-  };
-
-  const toggleDaySelection = (day: string) => {
-    setSelectedDays((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-    );
-  };
-
-  const toggleTimeSelection = (time: string) => {
-    setSelectedTimes((prev) =>
-      prev.includes(time) ? prev.filter((t) => t !== time) : [...prev, time]
-    );
-  };
-
-  const handleSaveAndContinue = async () => {
-    try {
-      const newWorkPreference: Database['public']['Tables']['work_preferences']['Insert'] = {
-        user_id: userId,
-        start_time: startTime.toISOString(),
-        end_time: endTime.toISOString(),
-        selected_days: selectedDays.join(','),
-        selected_times: selectedTimes.join(','),
-        updated_at: new Date().toISOString(),
+  const toggleProductiveTime = (time: string) => {
+    setProductiveTimes((prev) => {
+      const currentTimes = prev[selectedDay];
+      return {
+        ...prev,
+        [selectedDay]: currentTimes.includes(time)
+          ? currentTimes.filter((t) => t !== time)
+          : [...currentTimes, time],
       };
-      supabase
-        .from('work_preferences')
-        .insert(newWorkPreference)
-        .then(() => console.log('saved work preferences: ', newWorkPreference));
+    });
+  };
 
-      // if successful
+  const handleSave = async () => {
+    try {
+      const daysData = Object.entries(times).map(([day, time]) => ({
+        day,
+        start_time: time.start.toISOString(),
+        end_time: time.end.toISOString(),
+        productive_times: productiveTimes[day],
+      }));
+
+      const newWorkPreference: Database['public']['Tables']['work_preferences_updated']['Insert'] = {
+          user_id: userId,
+          days: daysData,
+          updated_at: new Date().toISOString(),
+        };
+
+      const { error } = await supabase.from('work_preferences_updated').insert(newWorkPreference);
+
+      if (error) throw error;
+      console.log('Saved work preference data: ', newWorkPreference);
       router.push('/Break');
     } catch (error) {
       console.error('Error saving work preference data:', error);
@@ -67,89 +88,146 @@ const Work = () => {
   };
 
   const days = ['M', 'T', 'W', 'Th', 'F'];
-
   const timeSlots = [
-    ['6AM - 9AM', '9AM - 12PM', '12PM - 3PM'],
-    ['3PM - 6PM', '6PM - 9PM', '9PM - 12AM'],
+    '6AM - 7AM',
+    '7AM - 8AM',
+    '8AM - 9AM',
+    '9AM - 10AM',
+    '10AM - 11AM',
+    '11AM - 12PM',
+    '12PM - 1PM',
+    '1PM - 2PM',
+    '2PM - 3PM',
+    '3PM - 4PM',
+    '4PM - 5PM',
+    '5PM - 6PM',
+    '6PM - 7PM',
+    '7PM - 8PM',
+    '8PM - 9PM',
+    '9PM - 10PM',
+    '10PM - 11PM',
+    '11PM - 12AM',
   ];
 
+  const morningSlots = timeSlots.slice(0, 6);
+  const afternoonSlots = timeSlots.slice(6, 12);
+  const eveningSlots = timeSlots.slice(12, 18);
+
   return (
-    <ScrollView className="pb-30 flex-1 px-10 py-10">
-      <Text className="mb-5 text-3xl font-bold">{titleText}</Text>
+    <View className="flex-1">
+      <ScrollView className="flex-1 p-6">
+        <Text className="mb-5 text-3xl font-bold">{titleText}</Text>
 
-      <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
-        <Text className="text-lg font-semibold">{worktimeQuestion}</Text>
-        <View className="mt-5 flex-row items-center justify-between">
-          <Text className="text-md ml-5 font-semibold">Start Time</Text>
-          <DateTimePicker
-            testID="startTimePicker"
-            value={startTime}
-            mode="time"
-            is24Hour={false}
-            onChange={onStartTimeChange}
-            style={{ width: 100, marginRight: 25 }}
-          />
-        </View>
-
-        <View className="mt-5 flex-row items-center justify-between">
-          <Text className="text-md ml-5 font-semibold">End Time</Text>
-          <DateTimePicker
-            testID="endTimePicker"
-            value={endTime}
-            mode="time"
-            is24Hour={false}
-            onChange={onEndTimeChange}
-            style={{ width: 100, marginRight: 25 }}
-          />
-        </View>
-      </View>
-
-      <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
-        <Text className="text-lg font-semibold">{workdayQuestion}</Text>
-        <View className="mt-3 flex-row justify-around">
+        <View className="mb-5 flex-row justify-between">
           {days.map((day) => (
             <TouchableOpacity
               key={day}
-              onPress={() => toggleDaySelection(day)}
-              className={`h-12 w-12 items-center justify-center rounded-full 
-                ${selectedDays.includes(day) ? 'bg-accentPurple' : 'bg-gray-100'}`}>
+              onPress={() => setSelectedDay(day)}
+              className={`flex-1 items-center rounded p-3 ${selectedDay === day ? 'bg-accentPurple' : 'bg-gray-200'}`}>
               <Text
-                className={`text-lg font-bold ${selectedDays.includes(day) ? 'text-white' : 'text-accentPurple'}`}>
+                className={`font-bold ${selectedDay === day ? 'text-white' : 'text-accentPurple'}`}>
                 {day}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
-      </View>
 
-      <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
-        <Text className="text-lg font-semibold">{productiveTimes}</Text>
-        {timeSlots.map((row, rowIndex) => (
-          <View key={rowIndex} className="mt-3 flex-row justify-around">
-            {row.map((time) => (
+        <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
+          <Text className="text-lg font-semibold">{worktimeQuestion}</Text>
+
+          <View className="mt-5 flex-row items-center justify-center">
+            <Text className="text-md mr-3 font-semibold">Start Time</Text>
+            <DateTimePicker
+              testID="startTimePicker"
+              value={times[selectedDay].start}
+              mode="time"
+              is24Hour={false}
+              onChange={(event, selectedTime) =>
+                handleTimeChange(selectedDay, 'start', event, selectedTime)
+              }
+              style={{ width: 100 }}
+            />
+          </View>
+
+          <View className="mt-5 flex-row items-center justify-center">
+            <Text className="text-md mr-3 font-semibold">End Time</Text>
+            <DateTimePicker
+              testID="endTimePicker"
+              value={times[selectedDay].end}
+              mode="time"
+              is24Hour={false}
+              onChange={(event, selectedTime) =>
+                handleTimeChange(selectedDay, 'end', event, selectedTime)
+              }
+              style={{ width: 100 }}
+            />
+          </View>
+        </View>
+
+        <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
+          <Text className="text-lg font-semibold">{productiveTimesQuestion}</Text>
+
+          <Text className="mt-4 text-lg">Morning</Text>
+          <View className="mb-3 flex-row flex-wrap">
+            {morningSlots.map((time) => (
               <TouchableOpacity
                 key={time}
-                onPress={() => toggleTimeSelection(time)}
-                className={`h-12 w-24 items-center justify-center rounded-lg p-1
-                  ${selectedTimes.includes(time) ? 'bg-accentPurple' : 'bg-gray-100'}`}>
+                onPress={() => toggleProductiveTime(time)}
+                className={`mx-1 mb-2 h-12 flex-1 items-center justify-center rounded-lg p-1
+                  ${productiveTimes[selectedDay].includes(time) ? 'bg-accentPurple' : 'bg-gray-100'}`}
+                style={{ flexBasis: '30%', marginHorizontal: '1%' }}>
                 <Text
-                  className={`text-sm font-bold ${selectedTimes.includes(time) ? 'text-white' : 'text-accentPurple'}`}>
+                  className={`text-sm font-bold ${productiveTimes[selectedDay].includes(time) ? 'text-white' : 'text-accentPurple'}`}>
                   {time}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
-        ))}
+
+          <Text className="mt-4 text-lg">Afternoon</Text>
+          <View className="mb-3 flex-row flex-wrap">
+            {afternoonSlots.map((time) => (
+              <TouchableOpacity
+                key={time}
+                onPress={() => toggleProductiveTime(time)}
+                className={`mx-1 mb-2 h-12 flex-1 items-center justify-center rounded-lg p-1
+                  ${productiveTimes[selectedDay].includes(time) ? 'bg-accentPurple' : 'bg-gray-100'}`}
+                style={{ flexBasis: '30%', marginHorizontal: '1%' }}>
+                <Text
+                  className={`text-sm font-bold ${productiveTimes[selectedDay].includes(time) ? 'text-white' : 'text-accentPurple'}`}>
+                  {time}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text className="mt-4 text-lg">Evening</Text>
+          <View className="mb-3 flex-row flex-wrap">
+            {eveningSlots.map((time) => (
+              <TouchableOpacity
+                key={time}
+                onPress={() => toggleProductiveTime(time)}
+                className={`mx-1 mb-2 h-12 flex-1 items-center justify-center rounded-lg p-1
+                  ${productiveTimes[selectedDay].includes(time) ? 'bg-accentPurple' : 'bg-gray-100'}`}
+                style={{ flexBasis: '30%', marginHorizontal: '1%' }}>
+                <Text
+                  className={`text-sm font-bold ${productiveTimes[selectedDay].includes(time) ? 'text-white' : 'text-accentPurple'}`}>
+                  {time}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <View style={{ height: 50 }} />
+      </ScrollView>
+
+      <View className="p-6 pb-10 shadow-lg">
+        <TouchableOpacity className="rounded bg-accentPurple p-3" onPress={handleSave}>
+          <Text className="text-center text-lg text-white">Save and Continue</Text>
+        </TouchableOpacity>
       </View>
-
-      <TouchableOpacity
-        className="mt-5 rounded bg-accentPurple p-3"
-        onPress={() => handleSaveAndContinue()}>
-        <Text className="text-center text-lg text-white">Save and Continue</Text>
-      </TouchableOpacity>
-
-      <View style={{ height: 100 }} />
-    </ScrollView>
+    </View>
   );
 };
 

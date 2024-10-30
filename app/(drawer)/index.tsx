@@ -15,28 +15,33 @@ export default function Home() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View style={{ flex: 1, justifyContent: 'space-between', paddingHorizontal: 40, paddingVertical: 20 }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'space-between',
+          paddingHorizontal: 40,
+          paddingVertical: 20,
+        }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
           <View className="items-center">
             <Image
               source={require('../../assets/logo.png')}
-              className="h-40 w-full max-h-60 mb-10"
+              className="mb-10 h-40 max-h-60 w-full"
               resizeMode="contain"
             />
-            <Text className="mb-4 text-3xl font-bold text-center">{titleText}</Text>
-            <Text className="mb-10 text-lg text-center">{introText}</Text>
-            <Text className="mb-2 text-2xl font-bold text-center">{instructionHeader}</Text>
-            <Text className="mb-6 text-lg text-center">{instructionText}</Text>
+            <Text className="mb-4 text-center text-3xl font-bold">{titleText}</Text>
+            <Text className="mb-10 text-center text-lg">{introText}</Text>
+            <Text className="mb-2 text-center text-2xl font-bold">{instructionHeader}</Text>
+            <Text className="mb-6 text-center text-lg">{instructionText}</Text>
           </View>
         </ScrollView>
         <TouchableOpacity
-          className="rounded bg-accentPurple px-4 py-2 mb-4"
-          onPress={() => router.push('/Login')}
-        >
-          <Text className="text-center font-bold text-lg text-white">Get Started</Text>
+          className="mb-4 rounded bg-accentPurple px-4 py-2"
+          onPress={() => router.push('/Login')}>
+          <Text className="text-center text-lg font-bold text-white">Get Started</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.push('/Login')}>
-          <Text className="text-sm text-gray-500 text-center">Already have an account? Login</Text>
+          <Text className="text-center text-sm text-gray-500">Already have an account? Login</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
