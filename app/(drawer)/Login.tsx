@@ -2,7 +2,14 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, ScrollView, View, TouchableOpacity, Text } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  ScrollView,
+  View,
+  TouchableOpacity,
+  Text,
+  Switch,
+} from 'react-native';
 
 import { useSupabase } from '~/app/context/useSupabase';
 import { Button } from '~/components/Button';
@@ -30,6 +37,7 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
+  const [isFeatureEnabled, setIsFeatureEnabled] = useState(false);
 
   useEffect(() => {
     WebBrowser.warmUpAsync();
@@ -66,7 +74,12 @@ export default function Login() {
       // Handle error here
       console.log(error);
     } finally {
-      router.push('/Work');
+      // Navigate based on user toggle
+      if (isFeatureEnabled) {
+        router.push('/Integration');
+      } else {
+        router.push('/Work');
+      }
       setLoading(false);
     }
   };
@@ -74,8 +87,6 @@ export default function Login() {
   const handleAuthAction = async () => {
     setLoading(true);
     try {
-      console.log('Username:', username);
-      console.log('Password:', password);
       if (isLogin) {
         await login(username, password);
       } else {
@@ -84,7 +95,11 @@ export default function Login() {
     } catch (error) {
       console.log(error);
     } finally {
-      router.push('/Work');
+      if (isFeatureEnabled) {
+        router.push('/Integration');
+      } else {
+        router.push('/Work');
+      }
       setLoading(false);
     }
   };
@@ -121,6 +136,17 @@ export default function Login() {
                 {isLogin ? "Don't have an account? Sign Up" : 'Already have an account? Login'}
               </Text>
             </TouchableOpacity>
+          </View>
+          <View className="mt-10 flex flex-col items-center rounded-lg bg-white p-4 shadow-md">
+            <Text className="mb-5 mr-2 text-center">
+              Enable describing work preferences using freeform input instead of selecting from options
+            </Text>
+            <Switch
+              value={isFeatureEnabled}
+              onValueChange={() => setIsFeatureEnabled(!isFeatureEnabled)}
+              trackColor={{ false: '#767577', true: '#825FFD' }}
+              thumbColor="#f4f3f4"
+            />
           </View>
         </View>
       </ScrollView>
