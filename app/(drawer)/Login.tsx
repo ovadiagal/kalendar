@@ -37,7 +37,7 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLogin, setIsLogin] = useState(true);
-  const [isFeatureEnabled, setIsFeatureEnabled] = useState(false);
+  const [isFreeformEnabled, setisFreeformEnabled] = useState(false);
 
   useEffect(() => {
     WebBrowser.warmUpAsync();
@@ -75,8 +75,8 @@ export default function Login() {
       console.log(error);
     } finally {
       // Navigate based on user toggle
-      if (isFeatureEnabled) {
-        router.push('/Integration');
+      if (isFreeformEnabled) {
+        router.push('/Freeform');
       } else {
         router.push('/Work');
       }
@@ -95,7 +95,7 @@ export default function Login() {
     } catch (error) {
       console.log(error);
     } finally {
-      if (isFeatureEnabled) {
+      if (isFreeformEnabled) {
         router.push('/Integration');
       } else {
         router.push('/Work');
@@ -139,11 +139,11 @@ export default function Login() {
           </View>
           <View className="mt-10 flex flex-col items-center rounded-lg bg-white p-4 shadow-md">
             <Text className="mb-5 mr-2 text-center">
-              Enable describing work preferences using freeform input instead of selecting from options
+              Enable describing work preferences using freeform input instead of selecting from defined options
             </Text>
             <Switch
-              value={isFeatureEnabled}
-              onValueChange={() => setIsFeatureEnabled(!isFeatureEnabled)}
+              value={isFreeformEnabled}
+              onValueChange={() => setisFreeformEnabled(!isFreeformEnabled)}
               trackColor={{ false: '#767577', true: '#825FFD' }}
               thumbColor="#f4f3f4"
             />
