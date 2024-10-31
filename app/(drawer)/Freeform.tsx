@@ -79,7 +79,7 @@ const Freeform = () => {
         renderItem={({ item }) => (
           <View className="flex-1 rounded-lg bg-white p-5" style={{ width }}>
             <Text className="mb-2 text-lg font-semibold">{item.key}</Text>
-            <Text className="mb-5 text-sm italic">{item.description}</Text>
+            <Text className="mb-5 text-m italic">{item.description}</Text>
             <TextInput
               value={item.value}
               onChangeText={(value) => handleInputChange(item.inputKey, value)}
@@ -112,7 +112,7 @@ const Freeform = () => {
         <Text className="text-center text-lg">
           Page {currentIndex + 1} of {data.length}
         </Text>
-        <Text className="mt-1 pl-5 pr-5 text-center text-sm text-accentPurple">
+        <Text className="mt-1 pl-5 pr-5 text-center text-m text-accentPurple font-bold">
           Swipe Right for More Customization
         </Text>
       </View>
