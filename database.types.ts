@@ -72,6 +72,54 @@ export type Database = {
         }
         Relationships: []
       }
+      freeform_preferences: {
+        Row: {
+          created_at: string
+          id: number
+          preference_modifications: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          preference_modifications?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          preference_modifications?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      generated_schedules: {
+        Row: {
+          created_at: string
+          generated_schedule: Json | null
+          id: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          generated_schedule?: Json | null
+          id?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          generated_schedule?: Json | null
+          id?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       work_preferences: {
         Row: {
           created_at: string
