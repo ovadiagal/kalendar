@@ -21,7 +21,7 @@ const Break = () => {
   const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
 
   const breakOptions = [
-    { label: 'Short (<15 min)', value: 'short' },
+    { label: 'Short (< 15 min)', value: 'short' },
     { label: 'Mid (15-30 min)', value: 'medium' },
     { label: 'Long (30-60 min)', value: 'long' },
     { label: 'Dedicated (> 1 hr)', value: 'dedicated' },

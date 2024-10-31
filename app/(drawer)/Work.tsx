@@ -14,6 +14,7 @@ const Work = () => {
   const titleText = "Let's start with your job.";
   const worktimeQuestion = 'What is your preferred start time and end time for this workday?';
   const productiveTimesQuestion = 'When do you think you are most productive on this workday?';
+  const remoteWorkQuestion = 'Will you be working remotely this day?';
 
   const [selectedDay, setSelectedDay] = useState<string>('M');
   const [times, setTimes] = useState<{ [key: string]: { start: Date; end: Date } }>({
@@ -30,6 +31,14 @@ const Work = () => {
     W: [],
     Th: [],
     F: [],
+  });
+
+  const [remoteWork, setRemoteWork] = useState<{ [key: string]: boolean | null }>({
+    M: null,
+    T: null,
+    W: null,
+    Th: null,
+    F: null,
   });
 
   const handleTimeChange = (
@@ -61,13 +70,21 @@ const Work = () => {
     });
   };
 
+  const handleRemoteWorkSelection = (isRemote: boolean) => {
+    setRemoteWork((prev) => ({
+      ...prev,
+      [selectedDay]: isRemote,
+    }));
+  };
+
   const handleSave = async () => {
     try {
       const daysData = Object.entries(times).map(([day, time]) => ({
         day,
-        start_time: time.start.toISOString(),
-        end_time: time.end.toISOString(),
-        productive_times: productiveTimes[day],
+        workday_start_time: time.start.toISOString(),
+        workday_end_time: time.end.toISOString(),
+        productive_time_chunks: productiveTimes[day],
+        is_remote_workday: remoteWork[day],
       }));
 
       const newWorkPreference: Database['public']['Tables']['work_preferences_updated']['Insert'] = {
@@ -137,6 +154,28 @@ const Work = () => {
               </Text>
             </TouchableOpacity>
           ))}
+        </View>
+
+        <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
+          <Text className="text-lg font-semibold">{remoteWorkQuestion}</Text>
+          <View className="mt-4 flex-row justify-between">
+            <TouchableOpacity
+              onPress={() => handleRemoteWorkSelection(true)}
+              className={`mr-2 flex-1 rounded-lg p-3 ${remoteWork[selectedDay] === true ? 'bg-accentPurple' : 'bg-gray-200'}`}>
+              <Text
+                className={`text-center font-bold ${remoteWork[selectedDay] === true ? 'text-white' : 'text-accentPurple'}`}>
+                Yes, I am working remotely
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => handleRemoteWorkSelection(false)}
+              className={`ml-2 flex-1 rounded-lg p-3 ${remoteWork[selectedDay] === false ? 'bg-accentPurple' : 'bg-gray-200'}`}>
+              <Text
+                className={`text-center font-bold ${remoteWork[selectedDay] === false ? 'text-white' : 'text-accentPurple'}`}>
+                No, I am not working remotely
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
