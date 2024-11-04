@@ -4,7 +4,7 @@ import { DrawerActions, useTheme } from '@react-navigation/native';
 import { useNavigation } from 'expo-router';
 import type { FC } from 'react';
 import React, { useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 import { runOnJS, useAnimatedReaction } from 'react-native-reanimated';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -13,9 +13,15 @@ interface CalendarTopBarProps {
   currentDate: SharedValue<string>;
   onPressToday: () => void;
   runScheduler: () => void;
+  loading: boolean;
 }
 
-const CalendarTopBar: FC<CalendarTopBarProps> = ({ currentDate, onPressToday, runScheduler }) => {
+const CalendarTopBar: FC<CalendarTopBarProps> = ({
+  currentDate,
+  onPressToday,
+  runScheduler,
+  loading,
+}) => {
   const theme = useTheme();
   const [title, setTitle] = useState('');
 
@@ -47,8 +53,13 @@ const CalendarTopBar: FC<CalendarTopBarProps> = ({ currentDate, onPressToday, ru
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
           activeOpacity={0.6}
           onPress={runScheduler}
+          disabled={loading}
           className="mr-4">
-          <Ionicons name="sparkles-sharp" size={24} color="blueviolet" />
+          {loading ? (
+            <ActivityIndicator size="small" color="blueviolet" />
+          ) : (
+            <Ionicons name="sparkles-sharp" size={24} color="blueviolet" />
+          )}
         </TouchableOpacity>
         <TouchableOpacity
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}

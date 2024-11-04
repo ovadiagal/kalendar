@@ -18,7 +18,7 @@ export const fetchStoredSchedule = async (
     console.error('Error fetching stored schedule:', error);
   }
 
-  if (data) {
+  if (data && data[0]) {
     return data[0].generated_schedule;
   }
 };

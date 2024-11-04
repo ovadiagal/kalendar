@@ -48,9 +48,6 @@ const Calendar = () => {
       setLoading(false);
     });
   };
-  useEffect(() => {
-    runScheduler();
-  }, []);
 
   const calendarRef = useRef<CalendarKitHandle>(null);
   const currentDate = useSharedValue(INITIAL_DATE);
@@ -100,6 +97,7 @@ const Calendar = () => {
         currentDate={currentDate}
         onPressToday={_onPressToday}
         runScheduler={runScheduler}
+        loading={loading}
       />
       <CalendarContainer
         ref={calendarRef}
