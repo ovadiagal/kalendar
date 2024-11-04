@@ -120,6 +120,33 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduler_feedback: {
+        Row: {
+          created_at: string
+          id: number
+          optional_feedback: string | null
+          thumbs_value: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          optional_feedback?: string | null
+          thumbs_value?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          optional_feedback?: string | null
+          thumbs_value?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       work_preferences: {
         Row: {
           created_at: string
