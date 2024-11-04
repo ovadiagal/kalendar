@@ -1,4 +1,3 @@
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Alert } from 'react-native';
@@ -13,37 +12,20 @@ const Break = () => {
 
   const titleText = 'You deserve a break today.';
   const breakQuestion = 'How much break time do you prefer between focused work sessions?';
-  const offlineQuestion =
-    'Are there specific times when you want to be offline and unavailable for work?';
+  const numberOfBreaksQuestion =
+    'How many breaks on average would you like to take in a given day?';
   const activityQuestion = 'What kinds of activities help you recharge?';
 
-  const [firstOfflineTime, setFirstOfflineTime] = useState<Date>(new Date());
-  const [secondOfflineTime, setSecondOfflineTime] = useState<Date>(new Date());
-  const [minutes, setMinutes] = useState<string>('');
+  const [numberOfBreaks, setNumberOfBreaks] = useState<string | null>(null);
+  const [selectedBreakTime, setSelectedBreakTime] = useState<string | null>(null);
   const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
 
-  const onFirstOfflineTimeChange = (event: DateTimePickerEvent, selectedTime?: Date) => {
-    const currentTime = selectedTime || firstOfflineTime;
-    setFirstOfflineTime(currentTime);
-  };
-
-  const onSecondOfflineTimeChange = (event: DateTimePickerEvent, selectedTime?: Date) => {
-    const currentTime = selectedTime || secondOfflineTime;
-    setSecondOfflineTime(currentTime);
-  };
-
-  const handleMinutesChange = (text: string) => {
-    if (text === '' || /^\d*$/.test(text)) {
-      const value = parseInt(text, 10);
-      if (value >= 0 && value <= 60) {
-        setMinutes(text);
-      } else if (text !== '') {
-        Alert.alert('Invalid Input', 'Please enter a value between 0 and 60.');
-      } else {
-        setMinutes(text);
-      }
-    }
-  };
+  const breakOptions = [
+    { label: 'Short (< 15 min)', value: 'short' },
+    { label: 'Mid (15-30 min)', value: 'medium' },
+    { label: 'Long (30-60 min)', value: 'long' },
+    { label: 'Dedicated (> 1 hr)', value: 'dedicated' },
+  ];
 
   const toggleActivitySelection = (activity: string) => {
     setSelectedActivities((prev) =>
@@ -51,23 +33,24 @@ const Break = () => {
     );
   };
 
+  const toggleBreakTimeSelection = (value: string) => {
+    setSelectedBreakTime(value === selectedBreakTime ? null : value);
+  };
+
   const handleSaveAndContinue = async () => {
     try {
-      const newBreakPreference: Database['public']['Tables']['break_preferences']['Insert'] = {
-        user_id: userId,
-        break_time_minutes: minutes,
-        offline_time_1: firstOfflineTime.toISOString(),
-        offline_time_2: secondOfflineTime.toISOString(),
-        selected_activities: selectedActivities.join(','),
-        updated_at: new Date().toISOString(),
-      };
+      const newBreakPreference: Database['public']['Tables']['break_preferences_updated']['Insert'] = {
+          user_id: userId,
+          break_time: selectedBreakTime,
+          number_of_breaks: numberOfBreaks,
+          selected_activities: selectedActivities.join(','),
+          updated_at: new Date().toISOString(),
+        };
 
-      supabase
-        .from('break_preferences')
-        .insert(newBreakPreference)
-        .then(() => console.log('saved break preferences: ', newBreakPreference));
+      const { error } = await supabase.from('break_preferences_updated').insert(newBreakPreference);
+      if (error) throw error;
 
-      // if successful
+      console.log('saved break preferences: ', newBreakPreference);
       router.push('/Integration');
     } catch (error) {
       console.error('Error saving break preference data:', error);
@@ -76,96 +59,99 @@ const Break = () => {
   };
 
   return (
-    <ScrollView className="pb-30 flex-1 px-10 py-10">
-      <Text className="mb-5 text-3xl font-bold">{titleText}</Text>
+    <View className="flex-1">
+      <ScrollView className="flex-1 p-6">
+        <Text className="mb-5 text-3xl font-bold">{titleText}</Text>
 
-      <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
-        <Text className="text-lg font-semibold">{breakQuestion}</Text>
-        <View className="mt-5 flex-row items-center justify-between">
-          <Text className="text-md ml-5 font-semibold">Break Time</Text>
-          <View className="mr-5 flex-row items-center">
-            <TextInput
-              value={minutes}
-              onChangeText={handleMinutesChange}
-              keyboardType="numeric" // Numeric keyboard for easier input
-              placeholder="0 - 60"
-              className="mb-3 mt-3 rounded border border-gray-300 p-2"
-              style={{ width: 60, height: 40 }} // Adjust the width and height as needed
-            />
-            <Text className="text-md ml-2">minutes</Text>
+        <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
+          <Text className="text-lg font-semibold">{breakQuestion}</Text>
+          <View className="mt-5">
+            <View className="flex-row justify-between pl-3 pr-3">
+              {breakOptions.slice(0, 2).map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => toggleBreakTimeSelection(option.label)}
+                  className={`h-14 w-40 items-center justify-center rounded-lg 
+                    ${selectedBreakTime === option.label ? 'bg-accentPurple' : 'bg-gray-100'}`}>
+                  <Text
+                    className={`text-md font-bold ${selectedBreakTime === option.label ? 'text-white' : 'text-accentPurple'}`}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View className="mt-3 flex-row justify-between pl-3 pr-3">
+              {breakOptions.slice(2).map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => toggleBreakTimeSelection(option.label)}
+                  className={`h-14 w-40 items-center justify-center rounded-lg 
+                    ${selectedBreakTime === option.label ? 'bg-accentPurple' : 'bg-gray-100'}`}>
+                  <Text
+                    className={`text-md font-bold ${selectedBreakTime === option.label ? 'text-white' : 'text-accentPurple'}`}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
-      </View>
 
-      <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
-        <Text className="text-lg font-semibold">{offlineQuestion}</Text>
-        <View className="mt-5 flex-row items-center justify-between">
-          <Text className="text-md ml-5 font-semibold">Offline Time #1</Text>
-          <DateTimePicker
-            testID="startTimePicker"
-            value={firstOfflineTime}
-            mode="time"
-            is24Hour={false}
-            onChange={onFirstOfflineTimeChange}
-            style={{ width: 100, marginRight: 25 }}
+        <View className="mb-5 mt-5 rounded-lg bg-white p-5 shadow-lg">
+          <Text className="mb-3 text-lg font-semibold">{numberOfBreaksQuestion}</Text>
+          <TextInput
+            keyboardType="numeric"
+            placeholder="Number of breaks"
+            value={numberOfBreaks !== null ? numberOfBreaks.toString() : ''}
+            onChangeText={(text) => setNumberOfBreaks(text)}
+            className="mt-2 rounded-lg border border-gray-400 p-2"
           />
         </View>
 
-        <View className="mt-5 flex-row items-center justify-between">
-          <Text className="text-md ml-5 font-semibold">Offline Time #2</Text>
-          <DateTimePicker
-            testID="endTimePicker"
-            value={secondOfflineTime}
-            mode="time"
-            is24Hour={false}
-            onChange={onSecondOfflineTimeChange}
-            style={{ width: 100, marginRight: 25 }}
-          />
-        </View>
-      </View>
-
-      <View className="mb-5 mt-5 rounded-lg bg-white pb-5 pl-3 pr-5 pt-5 shadow-lg">
-        <Text className="ml-3 text-lg font-semibold">{activityQuestion}</Text>
-        <View className="mt-3">
-          <View className="mb-2 flex-row justify-start">
-            {['Short walks', 'Meditation'].map((activity) => (
-              <TouchableOpacity
-                key={activity}
-                onPress={() => toggleActivitySelection(activity)}
-                className={`mr-2 h-14 w-40 items-center justify-center rounded-lg
-                  ${selectedActivities.includes(activity) ? 'bg-accentPurple' : 'bg-gray-100'}`}>
-                <Text
-                  className={`text-md font-bold ${selectedActivities.includes(activity) ? 'text-white' : 'text-accentPurple'}`}>
-                  {activity}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          <View className="flex-row justify-start">
-            {['Social breaks', 'Other'].map((activity) => (
-              <TouchableOpacity
-                key={activity}
-                onPress={() => toggleActivitySelection(activity)}
-                className={`mr-2 h-14 w-40 items-center justify-center rounded-lg
-                  ${selectedActivities.includes(activity) ? 'bg-accentPurple' : 'bg-gray-100'}`}>
-                <Text
-                  className={`text-md font-bold ${selectedActivities.includes(activity) ? 'text-white' : 'text-accentPurple'}`}>
-                  {activity}
-                </Text>
-              </TouchableOpacity>
-            ))}
+        <View className="mb-5 mt-5 rounded-lg bg-white pb-5 pl-3 pr-5 pt-5 shadow-lg">
+          <Text className="ml-3 text-lg font-semibold">{activityQuestion}</Text>
+          <View className="ml-3 mt-3">
+            <View className="mb-2 ml-3 flex-row justify-start">
+              {['Short walks', 'Meditation'].map((activity) => (
+                <TouchableOpacity
+                  key={activity}
+                  onPress={() => toggleActivitySelection(activity)}
+                  className={`mr-2 h-14 w-40 items-center justify-center rounded-lg
+                    ${selectedActivities.includes(activity) ? 'bg-accentPurple' : 'bg-gray-100'}`}>
+                  <Text
+                    className={`text-md font-bold ${selectedActivities.includes(activity) ? 'text-white' : 'text-accentPurple'}`}>
+                    {activity}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View className="ml-3 flex-row justify-start">
+              {['Social breaks', 'Eating snacks'].map((activity) => (
+                <TouchableOpacity
+                  key={activity}
+                  onPress={() => toggleActivitySelection(activity)}
+                  className={`mr-2 h-14 w-40 items-center justify-center rounded-lg
+                    ${selectedActivities.includes(activity) ? 'bg-accentPurple' : 'bg-gray-100'}`}>
+                  <Text
+                    className={`text-md font-bold ${selectedActivities.includes(activity) ? 'text-white' : 'text-accentPurple'}`}>
+                    {activity}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
+        <View style={{ height: 50 }} />
+      </ScrollView>
+
+      <View className="p-6 pb-10 shadow-lg">
+        <TouchableOpacity
+          className="mt-5 rounded bg-accentPurple p-3"
+          onPress={handleSaveAndContinue}>
+          <Text className="text-center text-lg text-white">Save and Continue</Text>
+        </TouchableOpacity>
       </View>
-
-      <TouchableOpacity
-        className="mt-5 rounded bg-accentPurple p-3"
-        onPress={() => handleSaveAndContinue()}>
-        <Text className="text-center text-lg text-white">Save and Continue</Text>
-      </TouchableOpacity>
-
-      <View style={{ height: 100 }} />
-    </ScrollView>
+    </View>
   );
 };
 
