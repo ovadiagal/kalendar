@@ -1,5 +1,4 @@
 import { Preferences } from '../models/Preferences';
-
 import { supabase } from '~/utils/supabase';
 
 export async function fetchPreferences(userId: string): Promise<Preferences> {
@@ -16,35 +15,61 @@ export async function fetchPreferences(userId: string): Promise<Preferences> {
       selectedActivities: ['Short walk', 'Meditation', 'Work out'],
     };
   }
+
   const { data: workPreferencesData, error: workPreferencesError } = await supabase
-    .from('work_preferences')
+    .from('work_preferences_updated')
     .select('*')
-    .eq('user_id', userId);
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false })
+    .limit(1);
+
   const { data: breakPreferencesData, error: breakPreferencesError } = await supabase
-    .from('break_preferences')
+    .from('break_preferences_updated')
     .select('*')
-    .eq('user_id', userId);
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false })
+    .limit(1);
 
   if (workPreferencesError || breakPreferencesError) {
     throw new Error('Error fetching preferences');
   }
 
-  const workPreferences = workPreferencesData[0];
-  const breakPreferences = breakPreferencesData[0];
+  const workPreferences = workPreferencesData?.[0];
+  const breakPreferences = breakPreferencesData?.[0];
+
+  if (!workPreferences || !breakPreferences) {
+    throw new Error('No preferences found for user');
+  }
+
+  // Extract time information from the first day's preferences
+  const firstDayPrefs = (workPreferences.days as any[])[0];
+  const startTime = new Date(firstDayPrefs.workday_start_time);
+  const endTime = new Date(firstDayPrefs.workday_end_time);
+
+  // Collect productive time chunks from all days
+  const selectedTimes = new Set<string>();
+  (workPreferences.days as any[]).forEach(day => {
+    day.productive_time_chunks?.forEach((chunk: string) => {
+      selectedTimes.add(chunk);
+    });
+  });
+
+  // Convert break time selection to minutes
+  const breakTimeMap: { [key: string]: number } = {
+    'Short (< 15 min)': 15,
+    'Mid (15-30 min)': 30,
+    'Long (30-60 min)': 45,
+    'Dedicated (> 1 hr)': 60,
+  };
 
   return {
     userId,
-    startTime: workPreferences.start_time ?? '09:00',
-    endTime: workPreferences.end_time ?? '17:00',
-    selectedDays: workPreferences.selected_days?.split(',') ?? ['M', 'T', 'W', 'Th', 'F'],
-    selectedTimes: workPreferences.selected_times?.split(',') ?? [],
-    breakTimeMinutes: breakPreferences.break_time_minutes
-      ? parseInt(breakPreferences?.break_time_minutes, 10)
-      : 15,
-    offlineTimes: breakPreferences.offline_time_1?.split(',') ?? ['12:00', '13:00'],
-    selectedActivities: breakPreferences.selected_activities?.split(',') ?? [
-      'Short walks',
-      'Meditation',
-    ],
+    startTime: `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`,
+    endTime: `${endTime.getHours().toString().padStart(2, '0')}:${endTime.getMinutes().toString().padStart(2, '0')}`,
+    selectedDays: workPreferences.days!.map((day: any) => day.day),
+    selectedTimes: Array.from(selectedTimes),
+    breakTimeMinutes: breakTimeMap[breakPreferences.break_time ?? 'Short (< 15 min)'] ?? 15,
+    offlineTimes: [], // field is not present in new schema. leaving it empty for now
+    selectedActivities: breakPreferences.selected_activities?.split(',') ?? ['Short walks', 'Meditation'],
   };
 }
