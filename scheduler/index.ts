@@ -9,7 +9,6 @@ export async function runScheduler(
   userId: string,
   externalEvents: EventItem[]
 ): Promise<EventItem[]> {
-  console.log('gonna fetch preferences');
   const preferences = await fetchPreferences(userId);
   const existingSchedule = await fetchStoredSchedule(userId);
 
