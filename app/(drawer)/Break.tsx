@@ -12,14 +12,17 @@ const Break = () => {
 
   const titleText = 'You deserve a break today.';
   const breakQuestion = 'How much break time do you prefer between focused work sessions?';
-  const numberOfBreaksQuestion =
-    'How many breaks on average would you like to take in a given day?';
+  const numberOfBreaksQuestion = 'How many breaks on average would you like to take in a given day?';
   const activityQuestion = 'What kinds of activities help you recharge?';
 
   const [numberOfBreaks, setNumberOfBreaks] = useState<string | null>(null);
   const [selectedBreakTime, setSelectedBreakTime] = useState<string | null>(null);
   const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
+  const [newActivity, setNewActivity] = useState('');
+  const [customActivities, setCustomActivities] = useState<string[]>([]);
 
+  const defaultActivities = ['Short walks', 'Meditation', 'Social break', 'Eating snacks'];
+  
   const breakOptions = [
     { label: 'Short (< 15 min)', value: 'short' },
     { label: 'Mid (15-30 min)', value: 'medium' },
@@ -37,15 +40,22 @@ const Break = () => {
     setSelectedBreakTime(value === selectedBreakTime ? null : value);
   };
 
+  const handleAddCustomActivity = () => {
+    if (newActivity.trim()) {
+      setCustomActivities((prev) => [...prev, newActivity.trim()]);
+      setNewActivity('');
+    }
+  };
+
   const handleSaveAndContinue = async () => {
     try {
       const newBreakPreference: Database['public']['Tables']['break_preferences_updated']['Insert'] = {
-          user_id: userId,
-          break_time: selectedBreakTime,
-          number_of_breaks: numberOfBreaks,
-          selected_activities: selectedActivities.join(','),
-          updated_at: new Date().toISOString(),
-        };
+        user_id: userId,
+        break_time: selectedBreakTime,
+        number_of_breaks: numberOfBreaks,
+        selected_activities: selectedActivities.join(','),
+        updated_at: new Date().toISOString(),
+      };
 
       const { error } = await supabase.from('break_preferences_updated').insert(newBreakPreference);
       if (error) throw error;
@@ -110,13 +120,27 @@ const Break = () => {
 
         <View className="mb-5 mt-5 rounded-lg bg-white pb-5 pl-3 pr-5 pt-5 shadow-lg">
           <Text className="ml-3 text-lg font-semibold">{activityQuestion}</Text>
+          <View className="mb-4 ml-3 mt-3 flex-row items-center">
+            <TextInput
+              value={newActivity}
+              onChangeText={setNewActivity}
+              placeholder="Add your own activity"
+              className="mr-2 flex-1 rounded-lg border border-gray-400 p-2"
+            />
+            <TouchableOpacity
+              onPress={handleAddCustomActivity}
+              className="h-10 w-20 items-center justify-center rounded-lg bg-accentPurple">
+              <Text className="font-bold text-white">Add</Text>
+            </TouchableOpacity>
+          </View>
+
           <View className="ml-3 mt-3">
-            <View className="mb-2 ml-3 flex-row justify-start">
-              {['Short walks', 'Meditation'].map((activity) => (
+            <View className="mb-2 ml-3 flex-row flex-wrap">
+              {defaultActivities.map((activity) => (
                 <TouchableOpacity
                   key={activity}
                   onPress={() => toggleActivitySelection(activity)}
-                  className={`mr-2 h-14 w-40 items-center justify-center rounded-lg
+                  className={`mr-2 mb-2 h-14 w-40 items-center justify-center rounded-lg
                     ${selectedActivities.includes(activity) ? 'bg-accentPurple' : 'bg-gray-100'}`}>
                   <Text
                     className={`text-md font-bold ${selectedActivities.includes(activity) ? 'text-white' : 'text-accentPurple'}`}>
@@ -125,20 +149,26 @@ const Break = () => {
                 </TouchableOpacity>
               ))}
             </View>
-            <View className="ml-3 flex-row justify-start">
-              {['Social breaks', 'Eating snacks'].map((activity) => (
-                <TouchableOpacity
-                  key={activity}
-                  onPress={() => toggleActivitySelection(activity)}
-                  className={`mr-2 h-14 w-40 items-center justify-center rounded-lg
-                    ${selectedActivities.includes(activity) ? 'bg-accentPurple' : 'bg-gray-100'}`}>
-                  <Text
-                    className={`text-md font-bold ${selectedActivities.includes(activity) ? 'text-white' : 'text-accentPurple'}`}>
-                    {activity}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+
+            {customActivities.length > 0 && (
+              <>
+                <Text className="mb-2 ml-3 text-sm font-semibold text-gray-600">Your Activities:</Text>
+                <View className="mb-2 ml-3 flex-row flex-wrap">
+                  {customActivities.map((activity) => (
+                    <TouchableOpacity
+                      key={activity}
+                      onPress={() => toggleActivitySelection(activity)}
+                      className={`mr-2 mb-2 h-14 w-40 items-center justify-center rounded-lg
+                        ${selectedActivities.includes(activity) ? 'bg-accentPurple' : 'bg-gray-100'}`}>
+                      <Text
+                        className={`text-md font-bold ${selectedActivities.includes(activity) ? 'text-white' : 'text-accentPurple'}`}>
+                        {activity}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
           </View>
         </View>
         <View style={{ height: 50 }} />
