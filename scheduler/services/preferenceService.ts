@@ -6,13 +6,24 @@ export async function fetchPreferences(userId: string): Promise<Preferences> {
     console.log('Using test preferences');
     return {
       userId: 'TEST',
-      startTime: '09:00',
-      endTime: '17:00',
-      selectedDays: ['M', 'T', 'W', 'Th', 'F'],
-      selectedTimes: ['6AM - 9AM'],
+      days: [
+        {
+          day: 'Mon',
+          start_time: '9AM',
+          end_time: '5PM',
+          productive_times: ['9AM - 12PM', '2PM - 4PM'],
+        },
+        {
+          day: 'Tue',
+          start_time: '9AM',
+          end_time: '5PM',
+          productive_times: ['9AM - 12PM', '1PM - 4PM'],
+        },
+      ],
       breakTimeMinutes: 15,
-      offlineTimes: ['12:00', '13:00'],
+      numberOfBreaks: 4,
       selectedActivities: ['Short walk', 'Meditation', 'Work out'],
+      preferenceModifications: {},
     };
   }
 
@@ -30,31 +41,63 @@ export async function fetchPreferences(userId: string): Promise<Preferences> {
     .order('updated_at', { ascending: false })
     .limit(1);
 
-  if (workPreferencesError || breakPreferencesError) {
+  const { data: freeformPreferencesData, error: freeformPreferencesError } = await supabase
+    .from('freeform_preferences')
+    .select('*')
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false })
+    .limit(1);
+
+  if (workPreferencesError || breakPreferencesError || freeformPreferencesError) {
     throw new Error('Error fetching preferences');
   }
 
-  const workPreferences = workPreferencesData?.[0];
-  const breakPreferences = breakPreferencesData?.[0];
+  const workPreferences = workPreferencesData[0];
+  const breakPreferences = breakPreferencesData[0];
+  const freeformPreferences = freeformPreferencesData[0];
 
-  if (!workPreferences || !breakPreferences) {
-    throw new Error('No preferences found for user');
+  let parsedPreferenceModifications = {};
+  if (freeformPreferences?.preference_modifications) {
+    try {
+      parsedPreferenceModifications = JSON.parse(freeformPreferences.preference_modifications);
+    } catch (e) {
+      console.error('Error parsing preference modifications:', e);
+    }
   }
 
-  // Extract time information from the first day's preferences
-  const firstDayPrefs = (workPreferences.days as any[])[0];
-  const startTime = new Date(firstDayPrefs.workday_start_time);
-  const endTime = new Date(firstDayPrefs.workday_end_time);
+  let daysData: {
+    day: string;
+    start_time: string;
+    end_time: string;
+    productive_times: string[];
+  }[] = [];
 
-  // Collect productive time chunks from all days
-  const selectedTimes = new Set<string>();
-  (workPreferences.days as any[]).forEach(day => {
-    day.productive_time_chunks?.forEach((chunk: string) => {
-      selectedTimes.add(chunk);
+  if (Array.isArray(workPreferences?.days)) {
+    daysData = workPreferences.days.map((day: any) => {
+      return {
+        day: day.day || 'Mon',
+        start_time: day.workday_start_time,
+        end_time: day.workday_end_time,
+        productive_times: day.productive_time_chunks || [],
+      };
     });
-  });
+  } else {
+    daysData = [
+      {
+        day: 'Mon',
+        start_time: '9AM',
+        end_time: '5PM',
+        productive_times: ['9AM - 12PM', '2PM - 4PM'],
+      },
+      {
+        day: 'Tue',
+        start_time: '9AM',
+        end_time: '5PM',
+        productive_times: ['9AM - 12PM', '1PM - 4PM'],
+      },
+    ];
+  }
 
-  // Convert break time selection to minutes
   const breakTimeMap: { [key: string]: number } = {
     'Short (< 15 min)': 15,
     'Mid (15-30 min)': 30,
@@ -64,12 +107,15 @@ export async function fetchPreferences(userId: string): Promise<Preferences> {
 
   return {
     userId,
-    startTime: `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`,
-    endTime: `${endTime.getHours().toString().padStart(2, '0')}:${endTime.getMinutes().toString().padStart(2, '0')}`,
-    selectedDays: workPreferences.days!.map((day: any) => day.day),
-    selectedTimes: Array.from(selectedTimes),
-    breakTimeMinutes: breakTimeMap[breakPreferences.break_time ?? 'Short (< 15 min)'] ?? 15,
-    offlineTimes: [], // field is not present in new schema. leaving it empty for now
-    selectedActivities: breakPreferences.selected_activities?.split(',') ?? ['Short walks', 'Meditation'],
+    days: daysData,
+    breakTimeMinutes: breakTimeMap[breakPreferences?.break_time ?? 'Short (< 15 min)'] ?? 15,
+    numberOfBreaks: breakPreferences?.number_of_breaks
+      ? parseInt(breakPreferences.number_of_breaks, 10)
+      : 4,
+    selectedActivities: breakPreferences?.selected_activities?.split(',') ?? [
+      'Short walk',
+      'Meditation',
+    ],
+    preferenceModifications: parsedPreferenceModifications ?? {},
   };
 }
