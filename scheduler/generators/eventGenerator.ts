@@ -57,49 +57,60 @@ export async function generatePersonalEvents(
     // Map day numbers to day names
     const dayOfWeek = date.getDay(); // 0 (Sunday) to 6 (Saturday)
     const daysOfWeekMap: { [key: number]: string } = {
-      0: 'Sunday',
-      1: 'Monday',
-      2: 'Tuesday',
-      3: 'Wednesday',
-      4: 'Thursday',
-      5: 'Friday',
-      6: 'Saturday',
+      0: 'Sun',
+      1: 'M',
+      2: 'T',
+      3: 'W',
+      4: 'Th',
+      5: 'F',
+      6: 'Sat',
     };
     const dayName = daysOfWeekMap[dayOfWeek];
 
-    // Get the user's availability for the day
-    const dayStart = new Date(date);
-    const [startHour, startMinute] = prefs.startTime.split(':').map(Number);
-    dayStart.setHours(startHour, startMinute, 0, 0);
+    // Find the preferences for this day
+    const dayPrefs = prefs.days.find(day => {
+      return day.day === dayName;
+    });
 
-    const dayEnd = new Date(date);
-    const [endHour, endMinute] = prefs.endTime.split(':').map(Number);
-    dayEnd.setHours(endHour, endMinute, 0, 0);
+    if (dayPrefs) {
+      const dayStart = new Date(date);
+      const [startHour, startMinute] = parseTime(dayPrefs.start_time);
+      dayStart.setHours(startHour, startMinute, 0, 0);
 
-    // Initialize available slots with the full working day
-    let availableSlots: { start: Date; end: Date }[] = [{ start: dayStart, end: dayEnd }];
+      const dayEnd = new Date(date);
+      const [endHour, endMinute] = parseTime(dayPrefs.end_time);
+      dayEnd.setHours(endHour, endMinute, 0, 0);
 
-    // Exclude existing external events
-    if (externalEventsByDate[dayString]) {
-      for (const event of externalEventsByDate[dayString]) {
-        if (!event.start.dateTime || !event.end.dateTime) {
-          continue;
+      // Initialize available slots with the full working day
+      let availableSlots: { start: Date; end: Date }[] = [{ start: dayStart, end: dayEnd }];
+
+      // Exclude existing external events
+      if (externalEventsByDate[dayString]) {
+        for (const event of externalEventsByDate[dayString]) {
+          if (!event.start.dateTime || !event.end.dateTime) {
+            continue;
+          }
+          const eventStart = new Date(event.start.dateTime);
+          const eventEnd = new Date(event.end.dateTime);
+
+          availableSlots = splitTimeSlots(availableSlots, eventStart, eventEnd);
         }
-        const eventStart = new Date(event.start.dateTime);
-        const eventEnd = new Date(event.end.dateTime);
-
-        availableSlots = splitTimeSlots(availableSlots, eventStart, eventEnd);
       }
-    }
 
-    // Schedule work and activities in the available slots
-    for (const slot of availableSlots) {
-      const scheduledEvents = scheduleWorkAndActivities(slot, prefs, rng, generateEventId);
-      recommendedEvents.push(...scheduledEvents);
+      // Schedule work and activities in the available slots
+      for (const slot of availableSlots) {
+        const scheduledEvents = scheduleWorkAndActivities(slot, prefs, rng, generateEventId);
+        recommendedEvents.push(...scheduledEvents);
+      }
     }
   }
 
   return recommendedEvents;
+}
+
+function parseTime(timeString: string): [number, number] {
+  const date = new Date(timeString);
+  return [date.getHours(), date.getMinutes()];
 }
 
 function scheduleWorkAndActivities(
@@ -114,70 +125,90 @@ function scheduleWorkAndActivities(
 
   while (currentTime < slot.end) {
     // Check if current time is within productive times
-    const isProductiveTime = prefs.selectedTimes.some((timeRange) => {
-      const [rangeStartStr, rangeEndStr] = timeRange.split('-');
-      const [rangeStartHour, rangeStartMinute] = rangeStartStr.split(':').map(Number);
-      const [rangeEndHour, rangeEndMinute] = rangeEndStr.split(':').map(Number);
+    const dayPrefs = prefs.days.find(day => day.day === getDayName(currentTime.getDay()));
 
-      const rangeStart = new Date(currentTime);
-      rangeStart.setHours(rangeStartHour, rangeStartMinute, 0, 0);
-      const rangeEnd = new Date(currentTime);
-      rangeEnd.setHours(rangeEndHour, rangeEndMinute, 0, 0);
+    if (dayPrefs) {
+      const isProductiveTime = dayPrefs.productive_times.some((timeRange) => {
+        const [rangeStartStr, rangeEndStr] = timeRange.split('-');
+        const [rangeStartHour, rangeStartMinute] = parseTime(rangeStartStr.trim());
+        const [rangeEndHour, rangeEndMinute] = parseTime(rangeEndStr.trim());
 
-      return currentTime >= rangeStart && currentTime < rangeEnd;
-    });
+        const rangeStart = new Date(currentTime);
+        rangeStart.setHours(rangeStartHour, rangeStartMinute, 0, 0);
+        const rangeEnd = new Date(currentTime);
+        rangeEnd.setHours(rangeEndHour, rangeEndMinute, 0, 0);
 
-    // Set event durations
-    const workSessionDuration = 90; // minutes
-    const activityDuration = 30; // minutes
-    let eventDuration = isProductiveTime ? workSessionDuration : activityDuration;
+        return currentTime >= rangeStart && currentTime < rangeEnd;
+      });
 
-    // Adjust event duration if it exceeds slot end
-    let eventEnd = new Date(currentTime);
-    eventEnd.setMinutes(eventEnd.getMinutes() + eventDuration);
-    if (eventEnd > slot.end) {
-      eventEnd = new Date(slot.end);
-      eventDuration = (eventEnd.getTime() - currentTime.getTime()) / (1000 * 60);
-    }
+      // Set event durations
+      const workSessionDuration = 90; // minutes
+      const activityDuration = 30; // minutes
+      let eventDuration = isProductiveTime ? workSessionDuration : activityDuration;
 
-    if (eventDuration <= 0) {
-      break; // No time left in slot
-    }
-
-    if (isProductiveTime) {
-      // Schedule focus work
-      const event: EventItem = {
-        id: generateEventId(),
-        title: 'Focus Work',
-        start: { dateTime: currentTime.toISOString() },
-        end: { dateTime: eventEnd.toISOString() },
-        color: 'blue',
-      };
-      scheduledEvents.push(event);
-
-      // Add break time
-      currentTime = new Date(eventEnd);
-      currentTime.setMinutes(currentTime.getMinutes() + prefs.breakTimeMinutes);
-    } else {
-      // Schedule an activity from selectedActivities
-      if (prefs.selectedActivities.length > 0) {
-        const activityIndex = Math.floor(rng.random() * prefs.selectedActivities.length);
-        const activity = prefs.selectedActivities[activityIndex];
-
-        const event: EventItem = {
-          id: generateEventId(),
-          title: activity,
-          start: { dateTime: currentTime.toISOString() },
-          end: { dateTime: eventEnd.toISOString() },
-          color: 'green',
-        };
-        scheduledEvents.push(event);
+      // Adjust event duration if it exceeds slot end
+      let eventEnd = new Date(currentTime);
+      eventEnd.setMinutes(eventEnd.getMinutes() + eventDuration);
+      if (eventEnd > slot.end) {
+        eventEnd = new Date(slot.end);
+        eventDuration = (eventEnd.getTime() - currentTime.getTime()) / (1000 * 60);
       }
 
-      // Move currentTime to eventEnd
-      currentTime = new Date(eventEnd);
+      if (eventDuration <= 0) {
+        break; // No time left in slot
+      }
+
+      if (isProductiveTime) {
+        // Schedule focus work
+        const event: EventItem = {
+          id: generateEventId(),
+          title: 'Focus Work',
+          start: { dateTime: currentTime.toISOString() },
+          end: { dateTime: eventEnd.toISOString() },
+          color: 'blue',
+        };
+        scheduledEvents.push(event);
+
+        // Add break time
+        currentTime = new Date(eventEnd);
+        currentTime.setMinutes(currentTime.getMinutes() + prefs.breakTimeMinutes);
+      } else {
+        // Schedule an activity from selectedActivities
+        if (prefs.selectedActivities.length > 0) {
+          const activityIndex = Math.floor(rng.random() * prefs.selectedActivities.length);
+          const activity = prefs.selectedActivities[activityIndex];
+
+          const event: EventItem = {
+            id: generateEventId(),
+            title: activity,
+            start: { dateTime: currentTime.toISOString() },
+            end: { dateTime: eventEnd.toISOString() },
+            color: 'green',
+          };
+          scheduledEvents.push(event);
+        }
+
+        // Move currentTime to eventEnd
+        currentTime = new Date(eventEnd);
+      }
+    } else {
+      // If no preferences for the day, move to the end of the slot
+      break;
     }
   }
 
   return scheduledEvents;
+}
+
+function getDayName(dayIndex: number): string {
+  const daysOfWeekMap: { [key: number]: string } = {
+    0: 'Sun',
+    1: 'M',
+    2: 'T',
+    3: 'W',
+    4: 'Th',
+    5: 'F',
+    6: 'Sat',
+  };
+  return daysOfWeekMap[dayIndex];
 }
