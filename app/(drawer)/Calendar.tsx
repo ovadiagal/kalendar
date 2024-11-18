@@ -219,7 +219,7 @@ const Calendar = () => {
         onDragCreateEventEnd={handleDragCreateEventEnd}
       >
         <CalendarHeader dayBarHeight={60} renderHeaderItem={undefined} />
-        <CalendarBody />
+        <CalendarBody hourFormat="hh:mm a"/>
       </CalendarContainer>
     </View>
   );
