@@ -32,8 +32,8 @@ const TimeEditor = ({
   }
 
   return (
-    <View className="space-y-4">
-      <View className="flex-row items-center justify-between">
+    <View className="space-y-6">
+      <View className="mb-4 flex-row items-center justify-between">
         <Text className="flex-1 text-base font-medium text-gray-700">Start Time</Text>
         <View className="flex-1">
           <DateTimePicker
@@ -43,11 +43,11 @@ const TimeEditor = ({
             onChange={(event, date) => {
               if (date) onTimeChange('start', date);
             }}
-            style={{ width: 100 }}
+            style={{ width: '100%' }}
           />
         </View>
       </View>
-      
+
       <View className="flex-row items-center justify-between">
         <Text className="flex-1 text-base font-medium text-gray-700">End Time</Text>
         <View className="flex-1">
@@ -58,7 +58,7 @@ const TimeEditor = ({
             onChange={(event, date) => {
               if (date) onTimeChange('end', date);
             }}
-            style={{ width: 100 }}
+            style={{ width: '100%' }}
           />
         </View>
       </View>
