@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@react-navigation/native';
 import type { FC } from 'react';
 import React, { useState } from 'react';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 import { runOnJS, useAnimatedReaction } from 'react-native-reanimated';
 
@@ -15,9 +15,17 @@ interface CalendarTopBarProps {
   currentDate: SharedValue<string>;
   onPressToday: () => void;
   runScheduler: () => void;
+  runSchedulerCompact: () => void;
+  loading: boolean;
 }
 
-const CalendarTopBar: FC<CalendarTopBarProps> = ({ currentDate, onPressToday, runScheduler }) => {
+const CalendarTopBar: FC<CalendarTopBarProps> = ({
+  currentDate,
+  onPressToday,
+  runScheduler,
+  runSchedulerCompact,
+  loading,
+}) => {
   const theme = useTheme();
   const [title, setTitle] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -89,13 +97,40 @@ const CalendarTopBar: FC<CalendarTopBarProps> = ({ currentDate, onPressToday, ru
           <MaterialCommunityIcons name="thumb-up" size={24} color={theme.colors.text} />
         </TouchableOpacity>
         <View className="flex-grow" />
-        <TouchableOpacity
-          hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
-          activeOpacity={0.6}
-          onPress={runScheduler}
-          className="ml-4">
-          <Ionicons name="sparkles-sharp" size={24} color="blueviolet" />
-        </TouchableOpacity>
+        <View className="mr-2 flex-row">
+          {/* Compact Scheduler */}
+          <TouchableOpacity
+            hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+            activeOpacity={0.6}
+            onPress={runSchedulerCompact}
+            className="ml-4"
+            disabled={loading}>
+            {loading ? (
+              <ActivityIndicator size="small" color="#e11d48" />
+            ) : (
+              <Ionicons
+                name="sparkles-sharp"
+                size={24}
+                color="#e11d48"
+                style={{ transform: [{ rotate: '180deg' }] }}
+              />
+            )}
+          </TouchableOpacity>
+
+          {/* Regular Scheduler */}
+          <TouchableOpacity
+            hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+            activeOpacity={0.6}
+            onPress={runScheduler}
+            className="ml-4"
+            disabled={loading}>
+            {loading ? (
+              <ActivityIndicator size="small" color="blueviolet" />
+            ) : (
+              <Ionicons name="sparkles-sharp" size={24} color="blueviolet" />
+            )}
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
           activeOpacity={0.6}
