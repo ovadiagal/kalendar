@@ -6,12 +6,13 @@ import type {
 } from '@howljs/calendar-kit';
 import { CalendarBody, CalendarContainer, CalendarHeader } from '@howljs/calendar-kit';
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, View } from 'react-native';
+import { Dimensions, View, SafeAreaView } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import CalendarTopBar from '../../components/CalendarTopBar';
 import { EventNotification } from '../../components/EventNotification';
+import Weather from '../../components/Weather';
 import * as scheduler from '../../scheduler/index';
 import { CalendarContext } from '../context/CalendarContext';
 import { useSupabase } from '../context/useSupabase';
@@ -173,7 +174,7 @@ const Calendar = () => {
   };
 
   return (
-    <View className="flex-1">
+    <SafeAreaView className="flex-1 bg-white">
       <EventNotification 
         events={[...externalEvents, ...personalEvents]}
         onEventUpdate={handleEventNotificationUpdate}
@@ -221,7 +222,8 @@ const Calendar = () => {
         <CalendarHeader dayBarHeight={60} renderHeaderItem={undefined} />
         <CalendarBody hourFormat="hh:mm a"/>
       </CalendarContainer>
-    </View>
+      <Weather />
+    </SafeAreaView>
   );
 };
 
