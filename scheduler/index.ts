@@ -8,20 +8,24 @@ import { supabase } from '~/utils/supabase';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
-const threads: { [userId: string]: any } = {};
+const normalThreads: { [userId: string]: any } = {};
+const compactThreads: { [userId: string]: any } = {};
 
 const weatherCache: { [userId: string]: string } = {};
 
 export async function runScheduler(
   userId: string,
   externalEvents: EventItem[],
-  assistantId?: string
+  assistantId: string,
+  assistantType: 'normal' | 'compact'
 ): Promise<EventItem[]> {
   const preferences = await fetchPreferences(userId);
 
   const openai = new OpenAI({
     apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY!,
   });
+
+  const threads = assistantType === 'normal' ? normalThreads : compactThreads;
 
   if (!threads[userId]) {
     threads[userId] = await openai.beta.threads.create();
@@ -52,14 +56,14 @@ export async function runScheduler(
     ${weatherCache[userId] && `The weather today is ${weatherCache[userId]}`}.
     Additional notes from the user: ${JSON.stringify(preferences.preferenceModifications)}`;
 
-  console.log('Content:', content);
+  console.log('Prompt for OpenAI:', content);
   await openai.beta.threads.messages.create(thread.id, {
     role: 'user',
     content,
   });
 
   const run = await openai.beta.threads.runs.create(thread.id, {
-    assistant_id: assistantId ?? process.env.EXPO_PUBLIC_OPENAI_ASSISTANT_ID!,
+    assistant_id: assistantId,
   });
 
   let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
@@ -76,11 +80,8 @@ export async function runScheduler(
   const response = await openai.beta.threads.messages.list(thread.id);
   const firstMessage = response.data[0];
 
-  console.log('OpenAI Response!:', firstMessage.content[0].type);
   if (firstMessage.content[0].type === 'text') {
     const generatedEvents = JSON.parse(firstMessage.content[0].text.value)['items'];
-
-    console.log('Generated Events:', generatedEvents);
     const updatedEvents: EventItem[] = generatedEvents.map(
       (event: Omit<EventItem, 'start' | 'end'>): EventItem => {
         return {
@@ -95,7 +96,7 @@ export async function runScheduler(
         };
       }
     );
-    console.log('Updated Events:', updatedEvents);
+    console.log('Scheduler created these events:', updatedEvents);
     return updatedEvents;
   }
   return [];
@@ -105,14 +106,14 @@ export async function runSchedulerCompact(
   userId: string,
   externalEvents: EventItem[]
 ): Promise<EventItem[]> {
-  const compactAgentId = process.env.EXPO_PUBLIC_OPENAI_COMPACT_ASSISTANT_ID;
-  return runScheduler(userId, externalEvents, compactAgentId);
+  const compactAgentId = process.env.EXPO_PUBLIC_OPENAI_COMPACT_ASSISTANT_ID!;
+  return runScheduler(userId, externalEvents, compactAgentId, 'compact');
 }
 
 export async function runSchedulerNormal(
   userId: string,
   externalEvents: EventItem[]
 ): Promise<EventItem[]> {
-  const normalAgentId = process.env.EXPO_PUBLIC_OPENAI_ASSISTANT_ID;
-  return runScheduler(userId, externalEvents, normalAgentId);
+  const normalAgentId = process.env.EXPO_PUBLIC_OPENAI_NORMAL_ASSISTANT_ID!;
+  return runScheduler(userId, externalEvents, normalAgentId, 'normal');
 }
