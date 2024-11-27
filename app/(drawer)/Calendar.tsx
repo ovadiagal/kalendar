@@ -31,6 +31,8 @@ const randomColor = () => {
 
 const Calendar = () => {
   const [externalEvents, setExternalEvents] = useState<EventItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
   const { events } = useContext(CalendarContext);
 
   useEffect(() => {
@@ -41,21 +43,34 @@ const Calendar = () => {
 
   const { userId } = useSupabase();
 
-  const runScheduler = async () => {
-    scheduler.runScheduler(userId ?? 'TEST', events).then((result) => {
-      setPersonalEvents(result.map((event) => ({ ...event, color: 'powderblue', draggable: true })));
+  const runSchedulerCompact = async () => {
+    if (loading) return;
+    setLoading(true);
+    scheduler.runSchedulerCompact(userId ?? '', events).then((result) => {
+      setPersonalEvents(
+        result.map((event) => ({ ...event, color: 'powderblue', draggable: true }))
+      );
+      setLoading(false);
     });
   };
-  useEffect(() => {
-    runScheduler();
-  }, []);
+
+  const runScheduler = async () => {
+    if (loading) return;
+    setLoading(true);
+    scheduler.runScheduler(userId ?? '', events).then((result) => {
+      setPersonalEvents(
+        result.map((event) => ({ ...event, color: 'powderblue', draggable: true }))
+      );
+      setLoading(false);
+    });
+  };
 
   const calendarRef = useRef<CalendarKitHandle>(null);
   const currentDate = useSharedValue(INITIAL_DATE);
   const [selectedEvent, setSelectedEvent] = useState<SelectedEventType>();
   const [calendarWidth, setCalendarWidth] = useState(Dimensions.get('window').width);
   const { bottom: safeBottom } = useSafeAreaInsets();
-  
+
   useEffect(() => {
     const subscription = Dimensions.addEventListener('change', ({ window }) => {
       setCalendarWidth(window.width);
@@ -101,11 +116,11 @@ const Calendar = () => {
       const updatedPersonalEvents = personalEvents.filter(
         (item) => item.id !== event.id && item.id !== originalRecurringEvent?.id
       );
-      
+
       if (originalRecurringEvent) {
         updatedPersonalEvents.push(originalRecurringEvent);
       }
-      
+
       const newEvent = { ...rest, id: event.id, color: 'powderblue', draggable: true };
       updatedPersonalEvents.push(newEvent);
       setPersonalEvents(updatedPersonalEvents);
@@ -127,11 +142,11 @@ const Calendar = () => {
       const updatedPersonalEvents = personalEvents.filter(
         (item) => item.id !== event.id && item.id !== originalRecurringEvent?.id
       );
-      
+
       if (originalRecurringEvent) {
         updatedPersonalEvents.push(originalRecurringEvent);
       }
-      
+
       updatedPersonalEvents.push({ ...rest, color: 'powderblue', draggable: true } as EventItem);
       setPersonalEvents(updatedPersonalEvents);
     }
@@ -156,26 +171,27 @@ const Calendar = () => {
     setSelectedEvent(newEvent);
   };
 
-  const handleEventNotificationUpdate = (updatedEvent: EventItem, action: 'delay' | 'cancel' | 'keep') => {
+  const handleEventNotificationUpdate = (
+    updatedEvent: EventItem,
+    action: 'delay' | 'cancel' | 'keep'
+  ) => {
     if (action === 'cancel') {
       // Remove the event if it was cancelled
-      setPersonalEvents(prev => prev.filter(event => event.id !== updatedEvent.id));
+      setPersonalEvents((prev) => prev.filter((event) => event.id !== updatedEvent.id));
       return;
     }
-  
+
     if (action === 'delay') {
       // Update the event with new times
-      setPersonalEvents(prev => 
-        prev.map(event => 
-          event.id === updatedEvent.id ? updatedEvent : event
-        )
+      setPersonalEvents((prev) =>
+        prev.map((event) => (event.id === updatedEvent.id ? updatedEvent : event))
       );
     }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <EventNotification 
+      <EventNotification
         events={[...externalEvents, ...personalEvents]}
         onEventUpdate={handleEventNotificationUpdate}
       />
@@ -183,6 +199,8 @@ const Calendar = () => {
         currentDate={currentDate}
         onPressToday={_onPressToday}
         runScheduler={runScheduler}
+        runSchedulerCompact={runSchedulerCompact}
+        loading={loading}
       />
       <CalendarContainer
         ref={calendarRef}
@@ -217,8 +235,7 @@ const Calendar = () => {
         spaceFromBottom={safeBottom}
         onDragEventEnd={handleDragEventEnd}
         onDragSelectedEventEnd={handleDragSelectedEventEnd}
-        onDragCreateEventEnd={handleDragCreateEventEnd}
-      >
+        onDragCreateEventEnd={handleDragCreateEventEnd}>
         <CalendarHeader dayBarHeight={60} renderHeaderItem={undefined} />
         <CalendarBody hourFormat="hh:mm a"/>
       </CalendarContainer>
