@@ -52,6 +52,7 @@
     "react-native-web": "~0.19.10",
     "supabase": "^1.207.9",
     "uuid": "^11.0.3"
+    "expo-location": "~17.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
