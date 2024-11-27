@@ -5,6 +5,7 @@ import OpenAI from 'openai';
 import { fetchPreferences } from './services/preferenceService';
 import { getLocation } from '~/components/Weather';
 import { supabase } from '~/utils/supabase';
+import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
 const threads: { [userId: string]: any } = {};
@@ -40,17 +41,21 @@ export async function runScheduler(
     weatherCache[userId] = weatherData.recommendation;
   }
 
-  await openai.beta.threads.messages.create(thread.id, {
-    role: 'user',
-    content: `Here are external, nonmovable events: ${JSON.stringify(externalEvents)}.
-    Here are the users preferences. The user works remotely on the following days: ${preferences.days}. 
+  const content = `The current time is ${new Date().toISOString()}.
+    Here are external, nonmovable events: ${JSON.stringify(externalEvents)}.
+    Here are the users preferences. The user works remotely on the following days: ${JSON.stringify(preferences.days)}. 
     The user prefers to start their day at ${preferences.days[0].start_time ?? 'unknown'} and end their day at ${preferences.days[0].end_time ?? 'unknown'}.
     The is most productive during these times: ${preferences.days[0].productive_times ?? 'unknown'}.
     The preferred break time in minutes is ${preferences.breakTimeMinutes}.
     The preferred number of breaks per day is ${preferences.numberOfBreaks}.
     Some of the preferred activities are ${preferences.selectedActivities}.
     ${weatherCache[userId] && `The weather today is ${weatherCache[userId]}`}.
-    Additional notes from the user: ${preferences.preferenceModifications}`,
+    Additional notes from the user: ${JSON.stringify(preferences.preferenceModifications)}`;
+
+  console.log('Content:', content);
+  await openai.beta.threads.messages.create(thread.id, {
+    role: 'user',
+    content,
   });
 
   const run = await openai.beta.threads.runs.create(thread.id, {
@@ -73,18 +78,25 @@ export async function runScheduler(
 
   console.log('OpenAI Response!:', firstMessage.content[0].type);
   if (firstMessage.content[0].type === 'text') {
-    const generatedEvents = JSON.parse(firstMessage.content[0].text.value)[
-      'items'
-    ] as Partial<EventItem>[];
+    const generatedEvents = JSON.parse(firstMessage.content[0].text.value)['items'];
 
     console.log('Generated Events:', generatedEvents);
-    generatedEvents.map((event) => {
-      return {
-        ...event,
-        id: uuidv4(),
-      };
-    });
-    return generatedEvents as EventItem[];
+    const updatedEvents: EventItem[] = generatedEvents.map(
+      (event: Omit<EventItem, 'start' | 'end'>): EventItem => {
+        return {
+          ...event,
+          id: uuidv4(),
+          start: {
+            dateTime: event.start,
+          },
+          end: {
+            dateTime: event.end,
+          },
+        };
+      }
+    );
+    console.log('Updated Events:', updatedEvents);
+    return updatedEvents;
   }
   return [];
 }
@@ -93,5 +105,14 @@ export async function runSchedulerCompact(
   userId: string,
   externalEvents: EventItem[]
 ): Promise<EventItem[]> {
-  return runScheduler(userId, externalEvents, process.env.EXPO_PUBLIC_OPENAI_COMPACT_ASSISTANT_ID);
+  const compactAgentId = process.env.EXPO_PUBLIC_OPENAI_COMPACT_ASSISTANT_ID;
+  return runScheduler(userId, externalEvents, compactAgentId);
+}
+
+export async function runSchedulerNormal(
+  userId: string,
+  externalEvents: EventItem[]
+): Promise<EventItem[]> {
+  const normalAgentId = process.env.EXPO_PUBLIC_OPENAI_ASSISTANT_ID;
+  return runScheduler(userId, externalEvents, normalAgentId);
 }
