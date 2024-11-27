@@ -8,24 +8,20 @@ import { supabase } from '~/utils/supabase';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
-const normalThreads: { [userId: string]: any } = {};
-const compactThreads: { [userId: string]: any } = {};
+const threads: { [userId: string]: any } = {};
 
 const weatherCache: { [userId: string]: string } = {};
 
 export async function runScheduler(
   userId: string,
   externalEvents: EventItem[],
-  assistantId: string,
-  assistantType: 'normal' | 'compact'
+  schedulerType: 'normal' | 'compact'
 ): Promise<EventItem[]> {
   const preferences = await fetchPreferences(userId);
 
   const openai = new OpenAI({
     apiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY!,
   });
-
-  const threads = assistantType === 'normal' ? normalThreads : compactThreads;
 
   if (!threads[userId]) {
     threads[userId] = await openai.beta.threads.create();
@@ -51,7 +47,7 @@ export async function runScheduler(
     The user prefers to start their day at ${preferences.days[0].start_time ?? 'unknown'} and end their day at ${preferences.days[0].end_time ?? 'unknown'}.
     The is most productive during these times: ${preferences.days[0].productive_times ?? 'unknown'}.
     The preferred break time in minutes is ${preferences.breakTimeMinutes}.
-    The preferred number of breaks per day is ${preferences.numberOfBreaks}.
+    The preferred number of breaks per day is ${preferences.numberOfBreaks}.asda
     Some of the preferred activities are ${preferences.selectedActivities}.
     ${weatherCache[userId] && `The weather today is ${weatherCache[userId]}`}.
     Additional notes from the user: ${JSON.stringify(preferences.preferenceModifications)}`;
@@ -63,7 +59,10 @@ export async function runScheduler(
   });
 
   const run = await openai.beta.threads.runs.create(thread.id, {
-    assistant_id: assistantId,
+    assistant_id:
+      schedulerType === 'normal'
+        ? process.env.EXPO_PUBLIC_OPENAI_ASSISTANT_ID!
+        : process.env.EXPO_PUBLIC_OPENAI_COMPACT_ASSISTANT_ID!,
   });
 
   let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
@@ -106,14 +105,12 @@ export async function runSchedulerCompact(
   userId: string,
   externalEvents: EventItem[]
 ): Promise<EventItem[]> {
-  const compactAgentId = process.env.EXPO_PUBLIC_OPENAI_COMPACT_ASSISTANT_ID!;
-  return runScheduler(userId, externalEvents, compactAgentId, 'compact');
+  return runScheduler(userId, externalEvents, 'compact');
 }
 
 export async function runSchedulerNormal(
   userId: string,
   externalEvents: EventItem[]
 ): Promise<EventItem[]> {
-  const normalAgentId = process.env.EXPO_PUBLIC_OPENAI_NORMAL_ASSISTANT_ID!;
-  return runScheduler(userId, externalEvents, normalAgentId, 'normal');
+  return runScheduler(userId, externalEvents, 'normal');
 }
