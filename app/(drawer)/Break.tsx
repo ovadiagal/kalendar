@@ -61,7 +61,7 @@ const Break = () => {
       if (error) throw error;
 
       console.log('saved break preferences: ', newBreakPreference);
-      router.push('/Integration');
+      router.push('/Freeform');
     } catch (error) {
       console.error('Error saving break preference data:', error);
       Alert.alert('Error', 'Failed to save break preference data. Please try again.');
