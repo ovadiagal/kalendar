@@ -74,12 +74,7 @@ export default function Login() {
       // Handle error here
       console.log(error);
     } finally {
-      // Navigate based on user toggle
-      if (isFreeformEnabled) {
-        router.push('/Freeform');
-      } else {
-        router.push('/Work');
-      }
+      router.push('/Work');
       setLoading(false);
     }
   };
@@ -136,17 +131,6 @@ export default function Login() {
                 {isLogin ? "Don't have an account? Sign Up" : 'Already have an account? Login'}
               </Text>
             </TouchableOpacity>
-          </View>
-          <View className="mt-10 flex flex-col items-center rounded-lg bg-white p-4 shadow-md">
-            <Text className="mb-5 mr-2 text-center">
-              Enable describing work preferences using freeform input instead of selecting from defined options
-            </Text>
-            <Switch
-              value={isFreeformEnabled}
-              onValueChange={() => setisFreeformEnabled(!isFreeformEnabled)}
-              trackColor={{ false: '#767577', true: '#825FFD' }}
-              thumbColor="#f4f3f4"
-            />
           </View>
         </View>
       </ScrollView>
