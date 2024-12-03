@@ -61,13 +61,13 @@ export default function Weather() {
     fetchWeatherData();
   }, [userId]);
 
-  if (loading) return <ActivityIndicator size="large" color="#0000ff" />;
+  if (loading) return <ActivityIndicator color="#0000ff" />;
   if (error) return <Text>Error: {error}</Text>;
   if (!weatherData) return <Text>No weather data available</Text>;
 
   return (
-    <View className="p-4 bg-white rounded-lg">
-      <View className="mb-4 flex-row justify-between items-center">
+    <View className="rounded-lg bg-white p-4">
+      <View className="mb-4 flex-row items-center justify-between">
         <TouchableOpacity
           className="mr-2"
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
@@ -75,11 +75,11 @@ export default function Weather() {
           onPress={() => router.push('/Profile')}>
           <Ionicons name="person-circle" size={30} color="#000" />
         </TouchableOpacity>
-        <Text className="text-xl font-semibold flex-grow">Today's Weather</Text>
+        <Text className="flex-grow text-xl font-semibold">Today's Weather</Text>
         <Text className="text-lg">{weatherData.weather.temperature.toFixed(1)}°C</Text>
       </View>
 
-      <View className="bg-blue-100 p-3 rounded-lg">
+      <View className="rounded-lg bg-blue-100 p-3">
         <Text className="text-blue-700">{weatherData.recommendation}</Text>
       </View>
     </View>
