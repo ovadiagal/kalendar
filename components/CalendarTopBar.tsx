@@ -15,7 +15,7 @@ interface CalendarTopBarProps {
   currentDate: SharedValue<string>;
   onPressToday: () => void;
   runScheduler: () => void;
-  runSchedulerCompact: () => void;
+  // runSchedulerCompact?: () => void;
   loading: boolean;
 }
 
@@ -23,7 +23,7 @@ const CalendarTopBar: FC<CalendarTopBarProps> = ({
   currentDate,
   onPressToday,
   runScheduler,
-  runSchedulerCompact,
+  // runSchedulerCompact,
   loading,
 }) => {
   const theme = useTheme();
@@ -98,7 +98,7 @@ const CalendarTopBar: FC<CalendarTopBarProps> = ({
         </TouchableOpacity>
         <View className="flex-grow" />
         <View className="mr-2 flex-row">
-          {/* Compact Scheduler */}
+          {/* Compact Scheduler
           <TouchableOpacity
             hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
             activeOpacity={0.6}
@@ -115,7 +115,7 @@ const CalendarTopBar: FC<CalendarTopBarProps> = ({
                 style={{ transform: [{ rotate: '180deg' }] }}
               />
             )}
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* Regular Scheduler */}
           <TouchableOpacity
