@@ -17,12 +17,36 @@ const Work = () => {
   const remoteWorkQuestion = 'Will you be working remotely this day?';
 
   const [selectedDay, setSelectedDay] = useState<string>('M');
+  function setTimeToHour(hour: number): Date {
+    const date = new Date();
+    date.setHours(hour, 0, 0, 0);
+    return date;
+  }
+
+  const defaultStartHour = 9; // 9 AM
+  const defaultEndHour = 17; // 5 PM
+
   const [times, setTimes] = useState<{ [key: string]: { start: Date; end: Date } }>({
-    M: { start: new Date(), end: new Date() },
-    T: { start: new Date(), end: new Date() },
-    W: { start: new Date(), end: new Date() },
-    Th: { start: new Date(), end: new Date() },
-    F: { start: new Date(), end: new Date() },
+    M: {
+      start: setTimeToHour(defaultStartHour),
+      end: setTimeToHour(defaultEndHour),
+    },
+    T: {
+      start: setTimeToHour(defaultStartHour),
+      end: setTimeToHour(defaultEndHour),
+    },
+    W: {
+      start: setTimeToHour(defaultStartHour),
+      end: setTimeToHour(defaultEndHour),
+    },
+    Th: {
+      start: setTimeToHour(defaultStartHour),
+      end: setTimeToHour(defaultEndHour),
+    },
+    F: {
+      start: setTimeToHour(defaultStartHour),
+      end: setTimeToHour(defaultEndHour),
+    },
   });
 
   const [productiveTimes, setProductiveTimes] = useState<{ [key: string]: string[] }>({
@@ -87,7 +111,8 @@ const Work = () => {
         is_remote_workday: remoteWork[day],
       }));
 
-      const newWorkPreference: Database['public']['Tables']['work_preferences_updated']['Insert'] = {
+      const newWorkPreference: Database['public']['Tables']['work_preferences_updated']['Insert'] =
+        {
           user_id: userId,
           days: daysData,
           updated_at: new Date().toISOString(),
@@ -219,8 +244,7 @@ const Work = () => {
               <TouchableOpacity
                 key={time}
                 onPress={() => toggleProductiveTime(time)}
-                className={`mx-1 mb-2 h-12 flex-1 items-center justify-center rounded-lg p-1
-                  ${productiveTimes[selectedDay].includes(time) ? 'bg-accentPurple' : 'bg-gray-100'}`}
+                className={`mx-1 mb-2 h-12 flex-1 items-center justify-center rounded-lg p-1 ${productiveTimes[selectedDay].includes(time) ? 'bg-accentPurple' : 'bg-gray-100'}`}
                 style={{ flexBasis: '30%', marginHorizontal: '1%' }}>
                 <Text
                   className={`text-sm font-bold ${productiveTimes[selectedDay].includes(time) ? 'text-white' : 'text-accentPurple'}`}>
@@ -236,8 +260,7 @@ const Work = () => {
               <TouchableOpacity
                 key={time}
                 onPress={() => toggleProductiveTime(time)}
-                className={`mx-1 mb-2 h-12 flex-1 items-center justify-center rounded-lg p-1
-                  ${productiveTimes[selectedDay].includes(time) ? 'bg-accentPurple' : 'bg-gray-100'}`}
+                className={`mx-1 mb-2 h-12 flex-1 items-center justify-center rounded-lg p-1 ${productiveTimes[selectedDay].includes(time) ? 'bg-accentPurple' : 'bg-gray-100'}`}
                 style={{ flexBasis: '30%', marginHorizontal: '1%' }}>
                 <Text
                   className={`text-sm font-bold ${productiveTimes[selectedDay].includes(time) ? 'text-white' : 'text-accentPurple'}`}>
@@ -253,8 +276,7 @@ const Work = () => {
               <TouchableOpacity
                 key={time}
                 onPress={() => toggleProductiveTime(time)}
-                className={`mx-1 mb-2 h-12 flex-1 items-center justify-center rounded-lg p-1
-                  ${productiveTimes[selectedDay].includes(time) ? 'bg-accentPurple' : 'bg-gray-100'}`}
+                className={`mx-1 mb-2 h-12 flex-1 items-center justify-center rounded-lg p-1 ${productiveTimes[selectedDay].includes(time) ? 'bg-accentPurple' : 'bg-gray-100'}`}
                 style={{ flexBasis: '30%', marginHorizontal: '1%' }}>
                 <Text
                   className={`text-sm font-bold ${productiveTimes[selectedDay].includes(time) ? 'text-white' : 'text-accentPurple'}`}>

@@ -23,6 +23,7 @@ const Integration = () => {
         // Get default calendar source
         const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
 
+        console.log('govadia:', calendars[0]);
         const calendarId = calendars[0].id;
 
         // Get current week start and end dates

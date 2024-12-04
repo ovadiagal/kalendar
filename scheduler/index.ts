@@ -43,14 +43,13 @@ export async function runScheduler(
 
   const content = `The current time is ${new Date().toISOString()}.
     Here are external, nonmovable events: ${JSON.stringify(externalEvents)}.
-    Here are the users preferences. The user works remotely on the following days: ${JSON.stringify(preferences.days)}. 
-    The user prefers to start their day at ${preferences.days[0].start_time ?? 'unknown'} and end their day at ${preferences.days[0].end_time ?? 'unknown'}.
     The is most productive during these times: ${preferences.days[0].productive_times ?? 'unknown'}.
     The preferred break time in minutes is ${preferences.breakTimeMinutes}.
-    The preferred number of breaks per day is ${preferences.numberOfBreaks}.asda
+    The preferred number of breaks per day is ${preferences.numberOfBreaks}.
     Some of the preferred activities are ${preferences.selectedActivities}.
-    ${weatherCache[userId] && `The weather today is ${weatherCache[userId]}`}.
-    Additional notes from the user: ${JSON.stringify(preferences.preferenceModifications)}`;
+    ${weatherCache[userId] && `The weather today is ${weatherCache[userId]}. Take this into account when scheduling events, you can also add some weather-based ones.`}.
+    Additional notes from the user: ${JSON.stringify(preferences.preferenceModifications)}
+    Schedule events for the next 3 days for this user. Try to be mindful of their preferences. Do not schedule anything before 1PM and after 3AM in UTC. Make sure that scheduled events DO NOT overlap with any external events. The user is in the New York time zone, but all times are in ISO strings. Try to schedule varied events. Don't schedule the same type of activity more than twice in a single day. Don't mention anything about lunch/breakfast/dinner or the time of day 'i.e. evening walk' in the names of the events.`;
 
   console.log('Prompt for OpenAI:', content);
   await openai.beta.threads.messages.create(thread.id, {
@@ -81,8 +80,8 @@ export async function runScheduler(
 
   if (firstMessage.content[0].type === 'text') {
     const generatedEvents = JSON.parse(firstMessage.content[0].text.value)['items'];
-    const updatedEvents: EventItem[] = generatedEvents.map(
-      (event: Omit<EventItem, 'start' | 'end'>): EventItem => {
+    const updatedEvents: EventItem[] = generatedEvents
+      .map((event: Omit<EventItem, 'start' | 'end'>): EventItem => {
         return {
           ...event,
           id: uuidv4(),
@@ -93,8 +92,30 @@ export async function runScheduler(
             dateTime: event.end,
           },
         };
-      }
-    );
+      })
+      .filter(
+        (event: {
+          end: { dateTime: string | number | Date };
+          start: { dateTime: string | number | Date };
+        }) => {
+          const endDateTime = new Date(event.end.dateTime);
+          const startDateTime = new Date(event.start.dateTime);
+          const now = new Date();
+
+          // Remove any events that end before the current time
+          if (endDateTime <= now) {
+            return false;
+          }
+
+          // Remove any events that start before 1PM UTC
+          if (startDateTime.getUTCHours() < 13) {
+            return false;
+          }
+
+          return true;
+        }
+      );
+
     console.log('Scheduler created these events:', updatedEvents);
     return updatedEvents;
   }

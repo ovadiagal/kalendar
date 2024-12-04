@@ -3,6 +3,7 @@
     "name": "kalendar",
     "slug": "kalendar",
     "version": "1.0.0",
+    "newArchEnabled": true,
     "scheme": "kalendar",
     "web": {
       "bundler": "metro",
@@ -39,8 +40,7 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true,
-      "hermes": false
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {

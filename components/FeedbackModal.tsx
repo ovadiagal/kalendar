@@ -29,7 +29,7 @@ const FeedbackModal: FC<FeedbackModalProps> = ({
     <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
       <BlurView intensity={50} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <View
-          className="w-72 items-center rounded-lg bg-white p-5"
+          className="mb-48 w-72 items-center rounded-lg bg-white p-5"
           style={{
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 2 },
@@ -62,13 +62,14 @@ const FeedbackModal: FC<FeedbackModalProps> = ({
           </View>
           <TextInput
             className="mb-4 h-24 w-full rounded-lg border border-gray-300 p-2"
-            placeholder="Any additional comments to improve your scheduling algorithm"
+            placeholder="Any additional comments to improve your scheduling algorithm..."
+            placeholderTextColor="#A0AEC0"
             value={feedbackText}
             onChangeText={setFeedbackText}
             multiline
             textAlignVertical="top"
           />
-          <TouchableOpacity onPress={handleFeedbackSubmit} className="mt-2">
+          <TouchableOpacity onPress={handleFeedbackSubmit} className="mt-2" hitSlop={8}>
             <Text className="text-blue-500">Submit</Text>
           </TouchableOpacity>
         </View>

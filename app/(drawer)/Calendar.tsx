@@ -43,17 +43,16 @@ const Calendar = () => {
 
   const { userId } = useSupabase();
 
-  const runSchedulerCompact = async () => {
-    if (loading) return;
-    setLoading(true);
-    scheduler.runSchedulerCompact(userId ?? '', events).then((result) => {
-      setPersonalEvents(
-        result.map((event) => ({ ...event, color: 'powderblue', draggable: true }))
-      );
-      setLoading(false);
-    });
-  };
-
+  // const runSchedulerCompact = async () => {
+  //   if (loading) return;
+  //   setLoading(true);
+  //   scheduler.runSchedulerCompact(userId ?? '', events).then((result) => {
+  //     setPersonalEvents(
+  //       result.map((event) => ({ ...event, color: 'powderblue', draggable: true }))
+  //     );
+  //     setLoading(false);
+  //   });
+  // };
   const runScheduler = async () => {
     if (loading) return;
     setLoading(true);
@@ -83,8 +82,10 @@ const Calendar = () => {
   };
 
   const _onPressToday = useCallback(() => {
+    const now = new Date();
+    const twoHoursLater = new Date(now.getTime() + 2 * 60 * 60 * 1000); // Add 2 hours in milliseconds
     calendarRef.current?.goToDate({
-      date: new Date().toISOString(),
+      date: twoHoursLater.toISOString(),
       animatedDate: true,
       hourScroll: true,
     });
@@ -199,13 +200,13 @@ const Calendar = () => {
         currentDate={currentDate}
         onPressToday={_onPressToday}
         runScheduler={runScheduler}
-        runSchedulerCompact={runSchedulerCompact}
+        // runSchedulerCompact={runSchedulerCompact}
         loading={loading}
       />
       <CalendarContainer
         ref={calendarRef}
         calendarWidth={calendarWidth}
-        numberOfDays={5}
+        numberOfDays={3}
         scrollByDay={true}
         firstDay={1}
         hideWeekDays={[]}
@@ -237,7 +238,7 @@ const Calendar = () => {
         onDragSelectedEventEnd={handleDragSelectedEventEnd}
         onDragCreateEventEnd={handleDragCreateEventEnd}>
         <CalendarHeader dayBarHeight={60} renderHeaderItem={undefined} />
-        <CalendarBody hourFormat="hh:mm a"/>
+        <CalendarBody hourFormat="hh:mm a" />
       </CalendarContainer>
       <Weather />
     </SafeAreaView>
